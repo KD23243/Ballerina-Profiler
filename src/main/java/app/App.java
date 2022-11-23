@@ -13,7 +13,6 @@ import static app.MethodWrapper.*;
 public class App {
     public static void main(String[] args) throws IOException {
         //Fix comment
-
         String jarPathJava = "/home/wso2/Documents/scrapCode/balcode/test/target/bin/test.jar";
 
         initialize(jarPathJava);
@@ -28,34 +27,36 @@ public class App {
         findAllClassNames(jarPath, classNames);
 
         //Jar files
-        JarFile jarFile = new JarFile(jarPath);
-        URL[] urls = new URL[]{new File(jarPath).toURI().toURL()};
+        try (JarFile jarFile = new JarFile(jarPath)) {
+            URL[] urls = new URL[]{new File(jarPath).toURI().toURL()};
 
-        //ClassLoaders
-        ClassLoader parentClassLoader = new URLClassLoader(urls);
-        MethodWrapperClassLoader customClassLoader = new MethodWrapperClassLoader(parentClassLoader);
+            //ClassLoaders
+            URLClassLoader parentClassLoader = new URLClassLoader(urls);
+            MethodWrapperClassLoader customClassLoader = new MethodWrapperClassLoader(parentClassLoader);
 
-        //Finds the main class name from the manifest
-        String mainClassPackage = mainClassFinder((URLClassLoader) parentClassLoader);
+            //Finds the main class name from the manifest
+            String mainClassPackage = mainClassFinder(parentClassLoader);
 
-        for (String className : classNames) {
+            for (String className : classNames) {
 
-            byte[] code;
+                byte[] code;
 
-            InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className));
+                InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className));
 
-            try {
-                if (className.startsWith(mainClassPackage)) {
-                    if (!className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$") || className.endsWith("$_init.class")) {
-                        code = modifyMethods(inputStream, mainClassPackage);
-//                        printCode(className,code);
-                    } else {
-                        code = streamToByte(inputStream);
+                try {
+                    assert mainClassPackage != null;
+                    if (className.startsWith(mainClassPackage)) {
+                        if (!className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$") || className.endsWith("$_init.class")) {
+                            code = modifyMethods(inputStream, mainClassPackage);
+    //                        printCode(className,code);
+                        } else {
+                            code = streamToByte(inputStream);
+                        }
+                        classFiles.add(customClassLoader.loadClass(code));
                     }
-                    classFiles.add(customClassLoader.loadClass(code));
+                } catch (Exception | Error ignored) {
+
                 }
-            } catch (Exception | Error e) {
-                System.out.println(e);
             }
         }
         invokeMethods(classFiles);
