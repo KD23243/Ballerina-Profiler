@@ -1,3 +1,0 @@
-[ b7a profiler prototype ]
-
-wso2.test.0.main :main()                                                                            :   1 calls, total time:    10 ms, avg time:    10 ms

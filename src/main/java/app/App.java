@@ -13,7 +13,6 @@ import static app.MethodWrapper.*;
 public class App {
     public static void main(String[] args) throws IOException {
 
-//        String jarPathJava = "/home/wso2/Documents/scrapCode/javacode/build/libs/app.jar";
         String jarPathJava = "/home/wso2/Documents/scrapCode/balcode/test/target/bin/test.jar";
 
         initialize(jarPathJava);
