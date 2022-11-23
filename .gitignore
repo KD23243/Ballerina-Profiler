@@ -47,6 +47,8 @@ gradle-app.setting
 ### Gradle ###
 .gradle/
 /build/
+.gradle/**/*.bin
+.gradle/**/*.lock
 
 # Ignore Gradle GUI config
 gradle-app.setting
