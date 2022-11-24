@@ -61,7 +61,7 @@ public class MethodWrapper extends ClassLoader {
         return byteArray;
     }
 
-    public static byte[] modifyMethods(InputStream inputStream, String mainClassPackage) {
+    public static byte[] modifyMethods(InputStream inputStream, String mainClassPackage, String className) {
 
         byte[] code;
         try {
@@ -106,7 +106,7 @@ public class MethodWrapper extends ClassLoader {
             methodVisitor.visitEnd();
 
 
-            ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage);
+            ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className);
             classReader.accept(change, ClassReader.EXPAND_FRAMES);
             code = classWriter.toByteArray();
             return code;
