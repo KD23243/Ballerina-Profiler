@@ -41,11 +41,12 @@ public class Profile {
 
     private String getFormattedStats(String format) {
         long avgTime = this.callCount == 0L ? 0L : this.totalTime / this.callCount;
-//        return String.format(format, this.name, this.callCount, this.totalTime, avgTime, this.minTime, this.maxTime);
-        return String.format(format, this.name, this.callCount, this.totalTime, avgTime);
+        return String.format(format, this.name, this.callCount, this.totalTime, avgTime, this.minTime, this.maxTime);
+//        return String.format(format, this.name, this.callCount, this.totalTime, avgTime);
     }
 
     public String toString() {
-        return this.getFormattedStats("%-100.100s: %3d calls, total time: %5d ms, avg time: %5d ms");
+//        return this.getFormattedStats("%-100.100s: %3d calls, total time: %5d ms, avg time: %5d ms");
+        return this.getFormattedStats("%-50.50s: %3d calls, total time: %5d ms, avg time: %5d ms, min time: %5d ms, max time: %5d ms");
     }
 }

@@ -13,6 +13,7 @@ public class Profiler {
     private final HashMap<String, Profile> profiles = new HashMap<>();
     private final ArrayList<Profile> profilesStack = new ArrayList<>();
 
+
     protected Profiler() {
     }
 
@@ -23,31 +24,34 @@ public class Profiler {
         return singletonInstance;
     }
 
+
     public void start() {
+
         final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
         String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
 
-        Profile p = (Profile) this.profiles.get(name);
+        Profile p = this.profiles.get(name);
         if (p == null) {
             p = new Profile(name);
             this.profiles.put(name, p);
             this.profilesStack.add(p);
         }
-
         p.start();
-
     }
 
-    public void stop() {
 
-        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
-        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
+    public void stop(String __strand) {
 
-        Profile p = (Profile) this.profiles.get(name);
-        if (p == null) {
-            throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
-        } else {
-            p.stop();
+        if (__strand.equals("RUNNABLE")){
+            final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
+            String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
+
+            Profile p = this.profiles.get(name);
+            if (p == null) {
+                throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
+            } else {
+                p.stop();
+            }
         }
 
     }
