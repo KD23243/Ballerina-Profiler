@@ -12,9 +12,8 @@ import static app.MethodWrapper.*;
 
 public class App {
     public static void main(String[] args) throws IOException {
-        //Fix comment
 
-        String jarPathJava = "/home/wso2/Documents/rc2Runtime/test/target/bin/test.jar";
+        String jarPathJava = "/home/wso2/Documents/rc2Runtime/test2/target/bin/test2.jar";
         initialize(jarPathJava);
     }
 

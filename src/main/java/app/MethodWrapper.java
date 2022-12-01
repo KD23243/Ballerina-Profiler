@@ -105,7 +105,6 @@ public class MethodWrapper extends ClassLoader {
             methodVisitor.visitMaxs(2, 0);
             methodVisitor.visitEnd();
 
-
             ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className);
             classReader.accept(change, ClassReader.EXPAND_FRAMES);
             code = classWriter.toByteArray();
