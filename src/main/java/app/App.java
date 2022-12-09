@@ -14,6 +14,9 @@ public class App {
     public static void main(String[] args) throws IOException {
 
         String jarPathJava = "/home/wso2/Documents/rc2Runtime/test2/target/bin/test2.jar";
+//        String jarPathJava = "/home/wso2/Documents/test/test1.jar";
+
+
         initialize(jarPathJava);
     }
 

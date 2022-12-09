@@ -16,6 +16,5 @@ public class MainWrapperAdapter extends AdviceAdapter {
     protected void onMethodEnter() {
         super.onMethodEnter();
         mv.visitMethodInsn(INVOKESTATIC, mainClassPackage + "/$_init", "shutDownHook", "()V", false);
-
     }
 }
