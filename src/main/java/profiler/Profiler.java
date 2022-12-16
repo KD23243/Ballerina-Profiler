@@ -37,6 +37,16 @@ public class Profiler {
         }
     }
 
+    public void stop() {
+
+
+            Profile p = this.profiles.get(getMethodName());
+            if (p == null) {
+                throw new RuntimeException("The profile " + getMethodName() + " has not been created by a call to the start() method!");
+            } else {
+                p.stop();
+            }
+    }
 
     public void stop(String strandState) {
 

@@ -61,57 +61,75 @@ public class MethodWrapper extends ClassLoader {
         return byteArray;
     }
 
-    public static byte[] modifyMethods(InputStream inputStream, String mainClassPackage, String className) {
+    public static byte[] modifyMethods(InputStream inputStream, String mainClassPackage, String className) throws IOException {
 
         byte[] code;
-        try {
-            ClassReader classReader = new ClassReader(inputStream);
-            ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
+        if (className.endsWith("init.class")) {
+            try {
+                ClassReader classReader = new ClassReader(inputStream);
+                ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
 
-            classWriter.visitInnerClass("java/lang/invoke/MethodHandles$Lookup", "java/lang/invoke/MethodHandles", "Lookup", ACC_PUBLIC | ACC_FINAL | ACC_STATIC);
+                classWriter.visitInnerClass("java/lang/invoke/MethodHandles$Lookup", "java/lang/invoke/MethodHandles", "Lookup", ACC_PUBLIC | ACC_FINAL | ACC_STATIC);
 
+                MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC, "shutDownHook", "()V", null, null);
+                methodVisitor.visitCode();
+                Label labelShutDownHookZero = new Label();
+                methodVisitor.visitLabel(labelShutDownHookZero);
+                methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Runtime", "getRuntime", "()Ljava/lang/Runtime;", false);
+                methodVisitor.visitTypeInsn(NEW, "java/lang/Thread");
+                methodVisitor.visitInsn(DUP);
+                methodVisitor.visitInvokeDynamicInsn("run", "()Ljava/lang/Runnable;", new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false), Type.getType("()V"), new Handle(Opcodes.H_INVOKESTATIC, mainClassPackage + "/$_init", "lambda$shutDownHook$0", "()V", false), Type.getType("()V"));
+                methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Thread", "<init>", "(Ljava/lang/Runnable;)V", false);
+                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Runtime", "addShutdownHook", "(Ljava/lang/Thread;)V", false);
+                Label labelShutDownHookOne = new Label();
+                methodVisitor.visitLabel(labelShutDownHookOne);
+                methodVisitor.visitInsn(RETURN);
+                methodVisitor.visitMaxs(4, 0);
+                methodVisitor.visitEnd();
 
-            MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC, "shutDownHook", "()V", null, null);
-            methodVisitor.visitCode();
-            Label labelShutDownHookZero = new Label();
-            methodVisitor.visitLabel(labelShutDownHookZero);
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Runtime", "getRuntime", "()Ljava/lang/Runtime;", false);
-            methodVisitor.visitTypeInsn(NEW, "java/lang/Thread");
-            methodVisitor.visitInsn(DUP);
-            methodVisitor.visitInvokeDynamicInsn("run", "()Ljava/lang/Runnable;", new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false), Type.getType("()V"), new Handle(Opcodes.H_INVOKESTATIC, mainClassPackage + "/$_init", "lambda$shutDownHook$0", "()V", false), Type.getType("()V"));
-            methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Thread", "<init>", "(Ljava/lang/Runnable;)V", false);
-            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Runtime", "addShutdownHook", "(Ljava/lang/Thread;)V", false);
-            Label labelShutDownHookOne = new Label();
-            methodVisitor.visitLabel(labelShutDownHookOne);
-            methodVisitor.visitInsn(RETURN);
-            methodVisitor.visitMaxs(4, 0);
-            methodVisitor.visitEnd();
+                methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC, "lambda$shutDownHook$0", "()V", null, null);
+                methodVisitor.visitCode();
+                Label labelLambda$shutDownHook$0Zero = new Label();
+                methodVisitor.visitLabel(labelLambda$shutDownHook$0Zero);
+                methodVisitor.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+                methodVisitor.visitLdcInsn("* Profiling Stopped *\n");
+                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+                methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
+                methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
+                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "toString", "()Ljava/lang/String;", false);
+                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "printProfilerOutput", "(Ljava/lang/String;)V", false);
+                Label labelLambda$shutDownHook$0One = new Label();
+                methodVisitor.visitLabel(labelLambda$shutDownHook$0One);
+                methodVisitor.visitInsn(RETURN);
+                methodVisitor.visitMaxs(2, 0);
+                methodVisitor.visitEnd();
 
+                ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className);
+                classReader.accept(change, ClassReader.EXPAND_FRAMES);
+                code = classWriter.toByteArray();
+                return code;
 
-            methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC, "lambda$shutDownHook$0", "()V", null, null);
-            methodVisitor.visitCode();
-            Label labelLambda$shutDownHook$0Zero = new Label();
-            methodVisitor.visitLabel(labelLambda$shutDownHook$0Zero);
-            methodVisitor.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-            methodVisitor.visitLdcInsn("* Profiling Stopped *\n");
-            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
-            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "toString", "()Ljava/lang/String;", false);
-            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "printProfilerOutput", "(Ljava/lang/String;)V", false);
-            Label labelLambda$shutDownHook$0One = new Label();
-            methodVisitor.visitLabel(labelLambda$shutDownHook$0One);
-            methodVisitor.visitInsn(RETURN);
-            methodVisitor.visitMaxs(2, 0);
-            methodVisitor.visitEnd();
+            } catch (Exception | Error ignore) {
+                System.out.println(ignore);
+            }
+        } else {
 
-            ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className);
-            classReader.accept(change, ClassReader.EXPAND_FRAMES);
-            code = classWriter.toByteArray();
-            return code;
+            try {
+                ClassReader reader = new ClassReader(inputStream);
 
-        } catch (Exception | Error ignore) {
-            System.out.println(ignore);
+//                ClassWriter classWriter = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
+                ClassWriter classWriter = new BallerinaClassWriter(reader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+
+                ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className);
+                reader.accept(change, ClassReader.EXPAND_FRAMES);
+
+                code = classWriter.toByteArray();
+
+                return code;
+            } catch (Exception | Error e) {
+                e.printStackTrace();
+            }
+
         }
         return null;
     }
