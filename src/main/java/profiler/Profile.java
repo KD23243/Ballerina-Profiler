@@ -3,21 +3,18 @@ package profiler;
 import java.util.concurrent.TimeUnit;
 
 public class Profile {
-    private static final String FORMAT_STRING = "%-60.60s: %3d calls, total time: %5d ms, avg time: %5d ms, min time: %5d ms, max time: %5d ms";
+
+    private static final String FORMAT_STRING = "%-20.20s: Total Time: %5d ms, StackTrace: %5s";
     private String name;
+    private String trace;
     private long startTime;
-    private long callCount;
     private long totalTime;
     private long minTime;
     private long maxTime;
 
-    public Profile(String name) {
+    public Profile(String name, String trace) {
         this.name = name;
-        this.callCount = 0L;
-        this.totalTime = 0L;
-        this.startTime = 0L;
-        this.minTime = Long.MAX_VALUE;
-        this.maxTime = Long.MIN_VALUE;
+        this.trace = trace;
     }
 
     public void start() {
@@ -25,6 +22,7 @@ public class Profile {
     }
 
     public void stop() {
+
         long elapsed = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - this.startTime;
         if (elapsed < this.minTime) {
             this.minTime = elapsed;
@@ -35,12 +33,10 @@ public class Profile {
         }
 
         this.totalTime += elapsed;
-        ++this.callCount;
     }
 
     private String getFormattedStats(String format) {
-        long avgTime = this.callCount == 0L ? 0L : this.totalTime / this.callCount;
-        return String.format(format, this.name, this.callCount, this.totalTime, avgTime, this.minTime, this.maxTime);
+        return String.format(format, this.name, this.totalTime, this.trace);
     }
 
     public String toString() {

@@ -117,10 +117,10 @@ public class MethodWrapper extends ClassLoader {
             try {
                 ClassReader reader = new ClassReader(inputStream);
 
-//                ClassWriter classWriter = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
                 ClassWriter classWriter = new BallerinaClassWriter(reader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 
                 ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className);
+
                 reader.accept(change, ClassReader.EXPAND_FRAMES);
 
                 code = classWriter.toByteArray();
