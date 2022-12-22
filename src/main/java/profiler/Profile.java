@@ -4,17 +4,17 @@ import java.util.concurrent.TimeUnit;
 
 public class Profile {
 
-    private static final String FORMAT_STRING = "%-20.20s: Total Time: %5d ms, StackTrace: %5s";
+    private static final String FORMAT_STRING = "%-60s: TotalTime:- %6d ms, StackTrace:- %11s";
     private String name;
     private String trace;
     private long startTime;
-    private long totalTime;
-    private long minTime;
-    private long maxTime;
+    private long time;
 
     public Profile(String name, String trace) {
         this.name = name;
         this.trace = trace;
+        this.startTime = 0L;
+        this.time = Long.MAX_VALUE;
     }
 
     public void start() {
@@ -22,21 +22,11 @@ public class Profile {
     }
 
     public void stop() {
-
-        long elapsed = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - this.startTime;
-        if (elapsed < this.minTime) {
-            this.minTime = elapsed;
-        }
-
-        if (elapsed > this.maxTime) {
-            this.maxTime = elapsed;
-        }
-
-        this.totalTime += elapsed;
+        this.time = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - this.startTime;
     }
 
     private String getFormattedStats(String format) {
-        return String.format(format, this.name, this.totalTime, this.trace);
+        return String.format(format, this.name, this.time, this.trace);
     }
 
     public String toString() {

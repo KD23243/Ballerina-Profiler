@@ -15,15 +15,13 @@ public class MethodWrapperVisitor extends ClassVisitor {
         this.className = className;
     }
 
-    //TODO fix main time and print stacktrace where the method is called
-
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
 
         if (className.endsWith("$_init.class") && name.startsWith("main")){
-            return new MainWrapperAdapter(Opcodes.ASM9, methodVisitor, access, name, desc, mainClassPackage);
+            return new InitWrapperAdapter(Opcodes.ASM9, methodVisitor, access, name, desc, mainClassPackage);
         }else if (!className.endsWith("$_init.class") && desc.startsWith("(Lio/ballerina/runtime/internal/scheduling/Strand") && !name.startsWith("$")){
             return new MethodWrapperAdapter(access, methodVisitor, name, desc);
         }

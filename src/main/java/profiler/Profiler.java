@@ -2,10 +2,7 @@ package profiler;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Profiler {
@@ -15,8 +12,7 @@ public class Profiler {
     private ArrayList<String> blockedMethods = new ArrayList<>();
     private List<String> methodNames = new ArrayList<>();
 
-    int counter = 0;
-    int counter1 = 0;
+    int counter;
 
     protected Profiler() {
     }
@@ -28,47 +24,44 @@ public class Profiler {
         return singletonInstance;
     }
 
-    public void start() {
-        if (!blockedMethods.contains(getMethodName())) {
-            methodNames.add(getMethodName());
-            Profile p = this.profiles.get(getMethodName() + counter);
-            if (p == null) {
-                p = new Profile(getMethodName(),getStackTrace());
-                this.profiles.put(getMethodName(), p);
-                this.profilesStack.add(p);
-            }
+    public void start(int id) {
+        if (!blockedMethods.contains(getMethodName() + id)) {
+            Profile p = new Profile(getMethodName(),getStackTrace());
+            this.profiles.put(getMethodName() + id, p);
+            this.profilesStack.add(p);
             p.start();
-            counter++;
+            methodNames.add(getMethodName() + id);
+
+            removeDuplicates(blockedMethods);
         }
+        blockedMethods.remove(getMethodName() + id);
     }
 
-
-    public void stop(String strandState) {
+    public void stop(String strandState, int id) {
+        Profile p = this.profiles.get(getMethodName() + id);
         if (strandState.equals("RUNNABLE")){
-            Profile p = this.profiles.get(getMethodName());
             if (p == null) {
                 throw new RuntimeException("The profile " + getMethodName() + " has not been created by a call to the start() method!");
             } else {
                 p.stop();
+                counter++;
             }
-            counter1++;
         }else {
-            blockedMethods.add(getMethodName());
+            blockedMethods.add(getMethodName() + id);
         }
-
     }
+
 
     public String toString() {
 
-
-        StringBuffer sb = new StringBuffer();
+        StringBuffer stringBuffer = new StringBuffer();
 
         for (int i = 0; i < this.profilesStack.size(); i++) {
-            sb.append(this.profilesStack.get(i) + "\n");
+            stringBuffer.append(this.profilesStack.get(i) + "\n");
         }
 
         String heading = "[ b7a profiler prototype ]\n";
-        return heading + "\n" + sb + "\nCall Count          : " + counter + "\n" + "Function Count      : " + removeDuplicate(methodNames).size();
+        return heading + "\n" + stringBuffer + "\nCall Count          : " + counter + "\n" + "Function Count      : " + removeDuplicates(methodNames).size();
     }
 
     public void printProfilerOutput(String dataStream) {
@@ -96,10 +89,7 @@ public class Profiler {
         return stack.toString();
     }
 
-    public static List<String> removeDuplicate(List<String> list) {
+    public List<String> removeDuplicates(List<String> list) {
         return list.stream().distinct().collect(Collectors.toList());
     }
 }
-
-
-
