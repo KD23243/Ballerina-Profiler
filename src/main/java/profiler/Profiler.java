@@ -30,7 +30,7 @@ public class Profiler {
             this.profiles.put(getMethodName() + id, p);
             this.profilesStack.add(p);
             p.start();
-            methodNames.add(getMethodName() + id);
+            methodNames.add(getMethodName());
 
             removeDuplicates(blockedMethods);
         }
@@ -51,6 +51,7 @@ public class Profiler {
         }
     }
 
+//TODO call modulestop inside init shutdownhook 1st, but gotta pass that runtime var2 thing
 
     public String toString() {
 

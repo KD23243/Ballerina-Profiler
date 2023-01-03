@@ -24,10 +24,10 @@ public class MethodWrapper extends ClassLoader {
         Object[] arguments = new Object[1];
         arguments[0] = new String[]{};
 
-        for (int i = 0; i < classFiles.size(); i++) {
-            if (classFiles.get(i).getName().endsWith("$_init")) {
+        for (Class<?> classFile : classFiles) {
+            if (classFile.getName().endsWith("$_init")) {
                 try {
-                    classFiles.get(i).getDeclaredMethod("main", String[].class).invoke(null, arguments);
+                    classFile.getDeclaredMethod("main", String[].class).invoke(null, arguments);
                 } catch (Error | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     System.out.println(e);
                 }
@@ -71,38 +71,98 @@ public class MethodWrapper extends ClassLoader {
 
                 classWriter.visitInnerClass("java/lang/invoke/MethodHandles$Lookup", "java/lang/invoke/MethodHandles", "Lookup", ACC_PUBLIC | ACC_FINAL | ACC_STATIC);
 
-                MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC, "shutDownHook", "()V", null, null);
+
+                MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC, "shutDownHook", "(Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;)V", null, null);
                 methodVisitor.visitCode();
-                Label labelShutDownHookZero = new Label();
-                methodVisitor.visitLabel(labelShutDownHookZero);
+                Label label0x = new Label();
+                methodVisitor.visitLabel(label0x);
+
                 methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Runtime", "getRuntime", "()Ljava/lang/Runtime;", false);
                 methodVisitor.visitTypeInsn(NEW, "java/lang/Thread");
                 methodVisitor.visitInsn(DUP);
-                methodVisitor.visitInvokeDynamicInsn("run", "()Ljava/lang/Runnable;", new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false), Type.getType("()V"), new Handle(Opcodes.H_INVOKESTATIC, mainClassPackage + "/$_init", "lambda$shutDownHook$0", "()V", false), Type.getType("()V"));
+                methodVisitor.visitVarInsn(ALOAD, 0);
+                methodVisitor.visitInvokeDynamicInsn("run", "(Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;)Ljava/lang/Runnable;", new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false), new Object[]{Type.getType("()V"), new Handle(Opcodes.H_INVOKESTATIC, mainClassPackage + "/$_init", "lambda$shutDownHook$0", "(Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;)V", false), Type.getType("()V")});
                 methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Thread", "<init>", "(Ljava/lang/Runnable;)V", false);
                 methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Runtime", "addShutdownHook", "(Ljava/lang/Thread;)V", false);
-                Label labelShutDownHookOne = new Label();
-                methodVisitor.visitLabel(labelShutDownHookOne);
+                Label label1x = new Label();
+                methodVisitor.visitLabel(label1x);
+
                 methodVisitor.visitInsn(RETURN);
-                methodVisitor.visitMaxs(4, 0);
+                Label label2x = new Label();
+                methodVisitor.visitLabel(label2x);
+                methodVisitor.visitLocalVariable("var0", "Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;", null, label0x, label2x, 0);
+                methodVisitor.visitMaxs(4, 1);
                 methodVisitor.visitEnd();
 
-                methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC, "lambda$shutDownHook$0", "()V", null, null);
+
+                methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC, "lambda$shutDownHook$0", "(Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;)V", null, null);
                 methodVisitor.visitCode();
-                Label labelLambda$shutDownHook$0Zero = new Label();
-                methodVisitor.visitLabel(labelLambda$shutDownHook$0Zero);
+                Label label0 = new Label();
+                methodVisitor.visitLabel(label0);
+
                 methodVisitor.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
                 methodVisitor.visitLdcInsn("* Profiling Stopped *\n");
                 methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+                Label label1 = new Label();
+                methodVisitor.visitLabel(label1);
+
+                methodVisitor.visitVarInsn(ALOAD, 0);
+                methodVisitor.visitMethodInsn(INVOKESTATIC, mainClassPackage + "/$_init", "$moduleStop", "(Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;)V", false);
+                Label label2 = new Label();
+                methodVisitor.visitLabel(label2);
+
                 methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
                 methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
                 methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "toString", "()Ljava/lang/String;", false);
                 methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "printProfilerOutput", "(Ljava/lang/String;)V", false);
-                Label labelLambda$shutDownHook$0One = new Label();
-                methodVisitor.visitLabel(labelLambda$shutDownHook$0One);
+                Label label3 = new Label();
+                methodVisitor.visitLabel(label3);
+
                 methodVisitor.visitInsn(RETURN);
-                methodVisitor.visitMaxs(2, 0);
+                Label label4 = new Label();
+                methodVisitor.visitLabel(label4);
+                methodVisitor.visitLocalVariable("var0", "Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;", null, label0, label4, 0);
+                methodVisitor.visitMaxs(2, 1);
                 methodVisitor.visitEnd();
+
+
+//                MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC, "shutDownHook", "(Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;)V", null, null);
+//                methodVisitor.visitCode();
+//
+////                methodVisitor.visitVarInsn(ALOAD, 0);
+////                methodVisitor.visitMethodInsn(INVOKESTATIC, mainClassPackage + "/$_init", "$moduleStop", "(Lio/ballerina/runtime/internal/scheduling/RuntimeRegistry;)V", false);
+//
+//                Label labelShutDownHookZero = new Label();
+//                methodVisitor.visitLabel(labelShutDownHookZero);
+//                methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Runtime", "getRuntime", "()Ljava/lang/Runtime;", false);
+//                methodVisitor.visitTypeInsn(NEW, "java/lang/Thread");
+//                methodVisitor.visitInsn(DUP);
+//                methodVisitor.visitInvokeDynamicInsn("run", "()Ljava/lang/Runnable;", new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false), Type.getType("()V"), new Handle(Opcodes.H_INVOKESTATIC, mainClassPackage + "/$_init", "lambda$shutDownHook$0", "()V", false), Type.getType("()V"));
+//                methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Thread", "<init>", "(Ljava/lang/Runnable;)V", false);
+//                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Runtime", "addShutdownHook", "(Ljava/lang/Thread;)V", false);
+//                Label labelShutDownHookOne = new Label();
+//                methodVisitor.visitLabel(labelShutDownHookOne);
+//                methodVisitor.visitInsn(RETURN);
+//                methodVisitor.visitMaxs(4, 0);
+//                methodVisitor.visitEnd();
+//
+//                methodVisitor = classWriter.visitMethod(ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC, "lambda$shutDownHook$0", "()V", null, null);
+//                methodVisitor.visitCode();
+//                Label labelLambda$shutDownHook$0Zero = new Label();
+//                methodVisitor.visitLabel(labelLambda$shutDownHook$0Zero);
+//                methodVisitor.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+//                methodVisitor.visitLdcInsn("* Profiling Stopped *\n");
+//                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+//                methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
+//                methodVisitor.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
+//                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "toString", "()Ljava/lang/String;", false);
+//                methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "printProfilerOutput", "(Ljava/lang/String;)V", false);
+//                Label labelLambda$shutDownHook$0One = new Label();
+//                methodVisitor.visitLabel(labelLambda$shutDownHook$0One);
+//                methodVisitor.visitInsn(RETURN);
+//                methodVisitor.visitMaxs(2, 0);
+//                methodVisitor.visitEnd();
+
 
                 ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className);
                 classReader.accept(change, ClassReader.EXPAND_FRAMES);
