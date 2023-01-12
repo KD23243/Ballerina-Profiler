@@ -4,11 +4,15 @@ import java.util.concurrent.TimeUnit;
 
 public class Profile {
 
-    private static final String FORMAT_STRING = "%-60s: TotalTime:- %6d ms, StackTrace:- %11s";
+//    private static final String FORMAT_STRING = "%-60s: TotalTime:- %6s ms, StackTrace:- %11s";
+
+    private static final String FORMAT_STRING = "{'\"time\"': '\"%s\"', '\"stackTrace\"': '%s'},";
+
     private String name;
     private String trace;
     private long startTime;
     private long time;
+    private String displayTime;
 
     public Profile(String name, String trace) {
         this.name = name;
@@ -26,7 +30,15 @@ public class Profile {
     }
 
     private String getFormattedStats(String format) {
-        return String.format(format, this.name, this.time, this.trace);
+
+        if (this.time == Long.MAX_VALUE){
+            displayTime = "INC";
+        }else {
+            displayTime = String.valueOf(this.time);
+        }
+//        return String.format(format, this.name, this.displayTime, this.trace);
+
+        return String.format(format, this.displayTime, this.trace);
     }
 
     public String toString() {

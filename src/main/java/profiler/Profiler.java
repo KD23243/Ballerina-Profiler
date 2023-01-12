@@ -1,5 +1,6 @@
 package profiler;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -16,15 +17,14 @@ public class Profiler {
 
     protected Profiler() {
     }
-
     public static Profiler getInstance() {
         if (singletonInstance == null) {
             singletonInstance = new Profiler();
         }
         return singletonInstance;
     }
-
     public void start(int id) {
+
         if (!blockedMethods.contains(getMethodName() + id)) {
             Profile p = new Profile(getMethodName(),getStackTrace());
             this.profiles.put(getMethodName() + id, p);
@@ -51,29 +51,30 @@ public class Profiler {
         }
     }
 
-//TODO call modulestop inside init shutdownhook 1st, but gotta pass that runtime var2 thing
-
     public String toString() {
-
         StringBuffer stringBuffer = new StringBuffer();
 
         for (int i = 0; i < this.profilesStack.size(); i++) {
             stringBuffer.append(this.profilesStack.get(i) + "\n");
         }
-
-        String heading = "[ b7a profiler prototype ]\n";
-        return heading + "\n" + stringBuffer + "\nCall Count          : " + counter + "\n" + "Function Count      : " + removeDuplicates(methodNames).size();
+        return stringBuffer.toString();
     }
 
-    public void printProfilerOutput(String dataStream) {
-        try {
-            FileWriter myWriter = new FileWriter("Profile.txt");
-            myWriter.write(dataStream);
-            myWriter.close();
-        } catch (IOException var3) {
-            System.out.println("An error occurred.");
-        }
+    public void printProfilerOutput(String dataStream, String name){
 
+        dataStream = "[" + dataStream.replaceAll("'", "");
+        if(dataStream.indexOf(",") != -1){
+            dataStream = dataStream.substring(0,dataStream.length() - 2);
+        }
+        dataStream = dataStream + "]";
+
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(name + ".json"));
+            out.write(dataStream);
+            out.flush();
+        } catch (IOException ignore) {} catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getMethodName() {
@@ -87,10 +88,19 @@ public class Profiler {
         Collections.reverse(stack);
         stack.subList(0, 5).clear();
 
-        return stack.toString();
+        ArrayList<String> stackTraceArray = new ArrayList<String>();
+
+        for (StackWalker.StackFrame element : stack) {
+            stackTraceArray.add("\"" + element.toString().replaceAll("\\(.*\\)", "") + "()" + "\"");
+        }
+
+        return stackTraceArray.toString();
+
     }
 
     public List<String> removeDuplicates(List<String> list) {
         return list.stream().distinct().collect(Collectors.toList());
     }
+
+
 }
