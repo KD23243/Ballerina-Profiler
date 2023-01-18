@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static app.Parser.initializeParser;
+
 public class Profiler {
     private static Profiler singletonInstance = null;
     private final HashMap<String, Profile> profiles = new HashMap<>();
@@ -100,6 +102,24 @@ public class Profiler {
 
     public List<String> removeDuplicates(List<String> list) {
         return list.stream().distinct().collect(Collectors.toList());
+    }
+
+
+    public void start() {
+            Profile p = new Profile(getMethodName(),getStackTrace());
+            this.profiles.put(getMethodName() , p);
+            this.profilesStack.add(p);
+            p.start();
+    }
+
+    public void stop() {
+        Profile p = this.profiles.get(getMethodName());
+
+            if (p == null) {
+                throw new RuntimeException("The profile " + getMethodName() + " has not been created by a call to the start() method!");
+            } else {
+                p.stop();
+            }
     }
 
 

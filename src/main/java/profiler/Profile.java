@@ -32,7 +32,7 @@ public class Profile {
     private String getFormattedStats(String format) {
 
         if (this.time == Long.MAX_VALUE){
-            displayTime = "INC";
+            displayTime = "-1";
         }else {
             displayTime = String.valueOf(this.time);
         }

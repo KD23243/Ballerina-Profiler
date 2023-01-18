@@ -2,7 +2,8 @@ package app;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.json.JSONObject;
+import org.json.JSONArray;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,13 +16,11 @@ public class Parser {
         // Parse the input JSON data
 
         String file = "Output.json";
-//        String file = "/home/wso2/Documents/ProfilerDemo/profiler/Ballerina-Profiler/build/libs/Output.json";
         String jsonInput = readFileAsString(file);
 
         ObjectMapper mapper = new ObjectMapper();
         List<Item> input = mapper.readValue(jsonInput, new TypeReference<List<Item>>(){});
 
-        // Convert the input data to the desired format
         Data output = new Data();
         output.name = input.get(0).stackTrace.get(0);
         output.value = input.get(0).time;
@@ -55,9 +54,36 @@ public class Parser {
             }
         }
 
-        // Serialize the output data to JSON
         String json = mapper.writeValueAsString(output);
-        writer(json);
+        JSONObject jsonObject = new JSONObject(json);
+
+        int total = getGeneratedRoot(jsonObject);
+        int defaultTime = getDefaultRoot(jsonObject);
+
+        if (defaultTime == -1){
+            jsonObject.remove("value");
+            jsonObject.put("value", total);
+        }
+
+        writer(jsonObject.toString());
+    }
+
+    public static int getGeneratedRoot(JSONObject node) {
+        int total = 0;
+        JSONArray children = node.optJSONArray("children");
+        if (children != null) {
+            for (int i = 0; i < children.length(); i++) {
+                if (children.getJSONObject(i).getInt("value") != -1){
+                    total += children.getJSONObject(i).getInt("value");
+                }
+            }
+        }
+        return total;
+    }
+
+
+    public static int getDefaultRoot(JSONObject node) {
+        return (int) node.get("value");
     }
 
     public static String readFileAsString(String file)throws Exception
@@ -65,11 +91,11 @@ public class Parser {
         return new String(Files.readAllBytes(Paths.get(file)));
     }
 
-    private static void writer(String json1) {
-        json1 = "var data = " + json1;
+    private static void writer(String parsedJson) {
+        parsedJson = "var data = " + parsedJson;
         try {
-            FileWriter myWriter = new FileWriter("out.js");
-            myWriter.write(json1);
+            FileWriter myWriter = new FileWriter("Output1.json");
+            myWriter.write(parsedJson);
             myWriter.flush();
         } catch (IOException e) {
             System.out.println("An error occurred.");

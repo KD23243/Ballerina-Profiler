@@ -17,10 +17,12 @@ import static app.Parser.initializeParser;
 
 public class App {
 
+    //TODO inject to value anon as well/ fix first timestamp issue
+
     static String jarPathJava = null;
     static int period = 5000;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args){
 
         if (!(args.length == 0)){
             for (int i = 0; i < args.length; i++) {
@@ -41,11 +43,13 @@ public class App {
     private static void shutDownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             profilerStop();
+
             try {
                 initializeParser();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
         }));
     }
 
@@ -56,11 +60,18 @@ public class App {
             public void run() {
                 System.out.println("(Profiling...)");
                 profilerStop();
+
+                new Thread(() -> {
+                    try {
+                        initializeParser();
+                    }catch (Exception ignore){}
+                }).start();
+
             }
         }, 0, period);
     }
 
-    private static void initialize(String jarPath, int period) throws IOException {
+    private static void initialize(String jarPath, int period) {
 //        System.out.println("* Profiling Started *");
 
         //Class arrays
@@ -74,13 +85,10 @@ public class App {
         }
 
 
-
         //Jar files
         try (JarFile jarFile = new JarFile(jarPath)) {
             periodicStop(period);
             URL[] urls = new URL[]{new File(jarPath).toURI().toURL()};
-
-
 
             //ClassLoaders
             URLClassLoader parentClassLoader = new URLClassLoader(urls);
@@ -93,13 +101,15 @@ public class App {
 
                 byte[] code;
 
-
                 InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className));
 
                 try {
                     assert mainClassPackage != null;
                     if (className.startsWith(mainClassPackage)) {
-                        if (!className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$") || className.endsWith("$_init.class")) {
+
+//                        if (!className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$") || className.endsWith("$_init.class"))
+
+                        if (className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$") || className.endsWith("$_init.class")) {
                             code = modifyMethods(inputStream, mainClassPackage, className);
                             printCode(className,code);
                         } else {
