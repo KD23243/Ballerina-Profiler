@@ -70,6 +70,8 @@ public class MethodWrapperAdapter extends AdviceAdapter {
         mv.visitMaxs(-1, -1);
     }
 
+    /*  This method stops the profiling for the wrapped method
+    It retrieves the profiler instance, gets the strand state and id, and stops the profiling   */
     private void onFinally() {
         mv.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
         mv.visitVarInsn(ALOAD, load);
