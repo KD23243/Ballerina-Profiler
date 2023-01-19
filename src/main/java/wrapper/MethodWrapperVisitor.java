@@ -8,6 +8,8 @@ public class MethodWrapperVisitor extends ClassVisitor {
 
     String mainClassPackage;
     String className;
+    String strand = "(Lio/ballerina/runtime/internal/scheduling/Strand";
+    String valueAnon = "/$value$$anonType$_";
 
     public MethodWrapperVisitor(ClassVisitor classVisitor, String mainClassPackage, String className) {
         super(Opcodes.ASM9, classVisitor);
@@ -19,18 +21,14 @@ public class MethodWrapperVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
-
-        if (className.endsWith("$_init.class") && name.startsWith("main")){
-            return new InitWrapperAdapter(Opcodes.ASM9, methodVisitor, access, name, desc, mainClassPackage);
+        if (!className.startsWith(mainClassPackage + valueAnon) && !className.endsWith("$_init.class") && desc.startsWith(strand) && !name.startsWith("$")){
+            return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);
         }
-        else if (!className.startsWith(mainClassPackage + "/$value$$anonType$_") && !className.endsWith("$_init.class") && desc.startsWith("(Lio/ballerina/runtime/internal/scheduling/Strand") && !name.startsWith("$")){
-            return new MethodWrapperAdapter(access, methodVisitor, name, desc);
-        }
-        else if (className.startsWith(mainClassPackage + "/$value$$anonType$_")){
-            if (desc.startsWith("(Lio/ballerina/runtime/internal/scheduling/Strand") && name.startsWith("$") && !name.startsWith("$anonType") && !name.startsWith("$init")){
+        else if (className.startsWith(mainClassPackage + valueAnon)){
+            if (desc.startsWith(strand) && name.startsWith("$") && !name.startsWith("$anonType") && !name.startsWith("$init")){
+                return new MethodWrapperAdapter(access, methodVisitor, name, desc, 1);
+            }else if (name.endsWith("$init")){
                 return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
-            }else {
-                return new BasicWrapperAdapter(access, methodVisitor, name, desc);
             }
         }
         return methodVisitor;

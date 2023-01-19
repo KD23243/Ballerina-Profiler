@@ -16,34 +16,31 @@ import static app.MethodWrapper.*;
 import static app.Parser.initializeParser;
 
 public class App {
+    static String jarPathJava = null;   // variable to store the path of the jar file passed as an argument
+    static int period = 5000;   // variable to store the time period for the profiler to stop in milliseconds, set to 5000 by default
 
-    //TODO inject to value anon as well/ fix first timestamp issue
+    public static void main(String[] args) {
 
-    static String jarPathJava = null;
-    static int period = 5000;
-
-    public static void main(String[] args){
-
-        if (!(args.length == 0)){
+        if (!(args.length == 0)) {
             for (int i = 0; i < args.length; i++) {
-                if (args[i].equals("-f")){
-                    jarPathJava = args[i+1];
+                if (args[i].equals("-f")) {
+                    jarPathJava = args[i + 1];     // set the jar path variable
                 }
-                if (args[i].equals("-t")){
-                    period = Integer.parseInt(args[i+1]);
+                if (args[i].equals("-t")) {
+                    period = Integer.parseInt(args[i + 1]);   // set the period variable
                 }
             }
         }
 
         shutDownHook();
-        initialize(jarPathJava,period);
+        initialize(jarPathJava, period);
 
     }
 
     private static void shutDownHook() {
+        // add a shutdown hook to stop the profiler and parse the output when the program is closed
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             profilerStop();
-
             try {
                 initializeParser();
             } catch (Exception e) {
@@ -54,17 +51,19 @@ public class App {
     }
 
     private static void periodicStop(int period) {
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
+        // Create a new Timer object and Schedule a task to run periodically
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 System.out.println("(Profiling...)");
-                profilerStop();
-
+                profilerStop(); // Stop the profiler
+                // Create a new thread
                 new Thread(() -> {
                     try {
-                        initializeParser();
-                    }catch (Exception ignore){}
+                        initializeParser(); // Initialize the parser
+                    } catch (Exception ignore) {
+                    }
                 }).start();
 
             }
@@ -72,62 +71,54 @@ public class App {
     }
 
     private static void initialize(String jarPath, int period) {
-//        System.out.println("* Profiling Started *");
-
-        //Class arrays
         ArrayList<Class<?>> classFiles = new ArrayList<>();
         ArrayList<String> classNames = new ArrayList<>();
 
         try {
             findAllClassNames(jarPath, classNames);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("(No such file or directory)");
         }
 
-
-        //Jar files
+        // Create a JarFile object by passing in the path to the Jar file
         try (JarFile jarFile = new JarFile(jarPath)) {
             periodicStop(period);
-            URL[] urls = new URL[]{new File(jarPath).toURI().toURL()};
+            URL[] urls = new URL[]{new File(jarPath).toURI().toURL()};  // Create an array of URLs, with a single URL being the Jar file's location
+            URLClassLoader parentClassLoader = new URLClassLoader(urls);    // Create a new URLClassLoader using the array of URLs
+            MethodWrapperClassLoader customClassLoader = new MethodWrapperClassLoader(parentClassLoader);   // Create a new URLClassLoader using the array of URLs
+            String mainClassPackage = mainClassFinder(parentClassLoader);   // Find the main class package using the mainClassFinder method
 
-            //ClassLoaders
-            URLClassLoader parentClassLoader = new URLClassLoader(urls);
-            MethodWrapperClassLoader customClassLoader = new MethodWrapperClassLoader(parentClassLoader);
-
-            //Finds the main class name from the manifest
-            String mainClassPackage = mainClassFinder(parentClassLoader);
-
+            // Iterate through the class names in the "classNames" list
             for (String className : classNames) {
-
                 byte[] code;
-
-                InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className));
-
+                InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className));   // Get an InputStream for the current class in the Jar file
                 try {
                     assert mainClassPackage != null;
                     if (className.startsWith(mainClassPackage)) {
-
-//                        if (!className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$") || className.endsWith("$_init.class"))
-
                         if (className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$") || className.endsWith("$_init.class")) {
-                            code = modifyMethods(inputStream, mainClassPackage, className);
-                            printCode(className,code);
+                            code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
+                            printCode(className, code); // Print out the modified class code(DEBUG)
                         } else {
-                            code = streamToByte(inputStream);
+                            code = streamToByte(inputStream);   // Otherwise, just get the class code
                         }
-                        classFiles.add(customClassLoader.loadClass(code));
+                        classFiles.add(customClassLoader.loadClass(code));  // Load the class using the custom class loader and add it to the classFiles list
                     }
                 } catch (IOException ignored) {
-
+                    // Ignoring IOExceptions
                 }
             }
-        }catch (Exception | Error ignored) {
-
+        } catch (Exception | Error ignored) {
+            // Ignoring Exceptions and Errors
         }
-        invokeMethods(classFiles);
-
+        invokeMethods(classFiles);  // Call the invokeMethods method, passing in the classFiles list
     }
+
+    // Method to stop the profiler and print the output
     private static void profilerStop() {
-        Profiler.getInstance().printProfilerOutput(Profiler.getInstance().toString(), "Output");
+        // Get the singleton instance of the Profiler class
+        Profiler profiler = Profiler.getInstance();
+
+        // Print the profiler output to a file
+        profiler.printProfilerOutput(profiler.toString());
     }
 }
