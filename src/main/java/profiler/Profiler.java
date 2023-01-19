@@ -66,8 +66,10 @@ public class Profiler {
     }
 
     public void printProfilerOutput(String dataStream) {
-        dataStream = "[" + dataStream.replace("'", "") + "]";   // Add square brackets at the start and end of the string, and removes all single quotes within the string
+        dataStream = dataStream.replace("'", "");
+        dataStream = "[" + dataStream + "]";   // Add square brackets at the start and end of the string, and removes all single quotes within the string
         // Create a BufferedWriter object and write the modified dataStream to a file with the name "Output.json"
+
         try(BufferedWriter out = new BufferedWriter(new FileWriter("Output" + ".json"))) {
             out.write(dataStream);
         } catch (IOException e) {

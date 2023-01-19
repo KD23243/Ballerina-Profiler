@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Parser {
@@ -16,6 +17,11 @@ public class Parser {
 
         String file = "Output.json";    // File path of the Profiler Output json file
         String jsonInput = readFileAsString(file);  // Read the json file as a string
+
+        // Removes the trailing comma
+        StringBuffer jsonInputStringBuffer= new StringBuffer(jsonInput);
+        jsonInputStringBuffer.deleteCharAt(jsonInputStringBuffer.length()-3);
+        jsonInput = jsonInputStringBuffer.toString();
 
         ObjectMapper mapper = new ObjectMapper();   // Create an ObjectMapper object to map json to Java objects
         List<Item> input = mapper.readValue(jsonInput, new TypeReference<List<Item>>(){});  // Map the json input to a list of Item objects
@@ -64,9 +70,10 @@ public class Parser {
 
         int totalTime = getTotalTime(jsonObject);   // Calculate the total time
         int defaultTime = getDefaultTime(jsonObject);   // Calculate the default time
+        int leastTime = getLeastTime(jsonObject);   // Calculate the least time it takes for a function
 
         // Check if the default time is less than or equal to 0
-        if (defaultTime <= 0){
+        if (defaultTime <= 0 || defaultTime < leastTime){
             jsonObject.remove("value"); // Remove the "value" key
             jsonObject.put("value", totalTime); // Add the total time as the value
         }
@@ -86,6 +93,21 @@ public class Parser {
             }
         }
         return total;   // Return the total time
+    }
+
+    public static int getLeastTime(JSONObject node) {
+        ArrayList<Integer> timeStamps = new ArrayList<>();
+        JSONArray children = node.optJSONArray("children"); // Get the "children" array from the JSONObject
+        if (children != null) {
+            // Iterate through the children array
+            for (int i = 0; i < children.length(); i++) {
+                // Get the value of the child node and check if the value is not equal to -1
+                if (children.getJSONObject(i).getInt("value") != -1){
+                    timeStamps.add(children.getJSONObject(i).getInt("value")); // Add the value to the timestamps list
+                }
+            }
+        }
+        return Collections.min(timeStamps);   // Return the minimum timestamp
     }
 
 
