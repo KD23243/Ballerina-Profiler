@@ -24,6 +24,11 @@ public class MethodWrapper extends ClassLoader {
         Object[] arguments = new Object[1];
         arguments[0] = new String[]{};
 
+
+        //TODO inject and see if it's there
+
+//        System.getenv().get(arguments);
+
         // Iterate through each Class object in the ArrayList
         for (Class<?> classFile : classFiles) {
             // Check if the name of the Class is "$_init"
@@ -36,7 +41,6 @@ public class MethodWrapper extends ClassLoader {
                 }
             }
         }
-
     }
 
     public static void findAllClassNames(String jarPath, ArrayList<String> classNames) throws IOException {

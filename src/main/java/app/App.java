@@ -13,7 +13,8 @@ import java.util.TimerTask;
 import java.util.jar.JarFile;
 
 import static app.MethodWrapper.*;
-import static app.Parser.initializeParser;
+import static parser.CpuParser.initializeCPUParser;
+import static parser.MemoryParser.initializeMEMParser;
 
 public class App {
     static String jarPathJava = null;   // variable to store the path of the jar file passed as an argument
@@ -42,11 +43,9 @@ public class App {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             profilerStop();
             try {
-                initializeParser();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
+                initializeCPUParser();
+                initializeMEMParser();
+            } catch (Exception ignore) {}
         }));
     }
 
@@ -61,9 +60,9 @@ public class App {
                 // Create a new thread
                 new Thread(() -> {
                     try {
-                        initializeParser(); // Initialize the parser
-                    } catch (Exception ignore) {
-                    }
+                        initializeCPUParser();
+                        initializeMEMParser(); // Initialize the parser
+                    } catch (Exception ignore) {}
                 }).start();
 
             }
@@ -119,6 +118,7 @@ public class App {
         Profiler profiler = Profiler.getInstance();
 
         // Print the profiler output to a file
-        profiler.printProfilerOutput(profiler.toString());
+        profiler.printProfilerOutput(profiler.toStringCpu(), "CpuPre");
+        profiler.printProfilerOutput(profiler.toStringMem(), "MemPre");
     }
 }

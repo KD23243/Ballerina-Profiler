@@ -1,4 +1,4 @@
-package app;
+package parser;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Parser {
-    public static void initializeParser() throws Exception {
+public class CpuParser {
+    public static void initializeCPUParser() throws Exception {
 
-        String file = "Output.json";    // File path of the Profiler Output json file
+        String file = "CpuPre.json";    // File path of the Profiler Output json file
         String jsonInput = readFileAsString(file);  // Read the json file as a string
 
         // Removes the trailing comma
@@ -77,7 +77,7 @@ public class Parser {
             jsonObject.remove("value"); // Remove the "value" key
             jsonObject.put("value", totalTime); // Add the total time as the value
         }
-        writer(jsonObject.toString());  // write the json object to a file
+        writer(jsonObject.toString(),"CpuPost.json");  // write the json object to a file
     }
 
     public static int getTotalTime(JSONObject node) {
@@ -120,11 +120,11 @@ public class Parser {
         return new String(Files.readAllBytes(Paths.get(file)));  // Read Files as a String
     }
 
-    private static void writer(String parsedJson) {
+    static void writer(String parsedJson, String fileName) {
         // Add a variable declaration to the parsed json string
         parsedJson = "var data = " + parsedJson;
         try {
-            FileWriter myWriter = new FileWriter("Output1.json");   // Create a FileWriter object to write to the specified file
+            FileWriter myWriter = new FileWriter(fileName);   // Create a FileWriter object to write to the specified file
             myWriter.write(parsedJson); // Write the parsed json string to the file
             myWriter.flush();   // Flush the writer
         } catch (IOException e) {

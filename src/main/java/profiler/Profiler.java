@@ -57,20 +57,29 @@ public class Profiler {
         }
     }
 
-    public String toString() {
+    public String toStringCpu() {
         StringBuffer stringBuffer = new StringBuffer();
         for (int i = 0; i < this.profilesStack.size(); i++) {
-            stringBuffer.append(this.profilesStack.get(i) + "\n");
+            stringBuffer.append(this.profilesStack.get(i).toStringCpu() + "\n");
         }
+
         return stringBuffer.toString();
     }
 
-    public void printProfilerOutput(String dataStream) {
+    public String toStringMem() {
+        StringBuffer stringBuffer = new StringBuffer();
+        for (int i = 0; i < this.profilesStack.size(); i++) {
+            stringBuffer.append(this.profilesStack.get(i).toStringMem() + "\n");
+        }
+
+        return stringBuffer.toString();
+    }
+
+    public void printProfilerOutput(String dataStream, String fileName) {
         dataStream = dataStream.replace("'", "");
         dataStream = "[" + dataStream + "]";   // Add square brackets at the start and end of the string, and removes all single quotes within the string
         // Create a BufferedWriter object and write the modified dataStream to a file with the name "Output.json"
-
-        try(BufferedWriter out = new BufferedWriter(new FileWriter("Output" + ".json"))) {
+        try(BufferedWriter out = new BufferedWriter(new FileWriter(fileName + ".json"))) {
             out.write(dataStream);
         } catch (IOException e) {
             throw new RuntimeException(e);  // If there are any IOExceptions or other exceptions, it will be caught and handled
