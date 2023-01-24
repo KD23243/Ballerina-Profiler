@@ -34,30 +34,31 @@ public class MemoryParser {
 
         writer(stackTraceMemories.toString(),"MemPost.json");  // write the json object to a file
     }
+
+    private static class StackTraceMemory {
+        private String stackTrace;
+        private int memory;
+        private int counter;
+
+        public StackTraceMemory(String stackTrace, int memory, int counter) {
+            this.stackTrace = stackTrace;
+            this.memory = memory;
+            this.counter = counter;
+        }
+
+        public String getStackTrace() {
+            return stackTrace;
+        }
+
+        public int getMemory() {
+            return memory;
+        }
+
+        @Override
+        public String toString() {
+            String output = "{" + "\"StackTrace\": " + "\"" + this.counter + ") " + stackTrace + "\"" + ", \"Memory\": " + memory + "}";
+            return output;
+        }
+    }
 }
 
-class StackTraceMemory {
-    private String stackTrace;
-    private int memory;
-    private int counter;
-
-    public StackTraceMemory(String stackTrace, int memory, int counter) {
-        this.stackTrace = stackTrace;
-        this.memory = memory;
-        this.counter = counter;
-    }
-
-    public String getStackTrace() {
-        return stackTrace;
-    }
-
-    public int getMemory() {
-        return memory;
-    }
-
-    @Override
-    public String toString() {
-        String output = "{" + "\"StackTrace\": " + "\"" + this.counter + ") " + stackTrace + "\"" + ", \"Memory\": " + memory + "}";
-        return output;
-    }
-}
