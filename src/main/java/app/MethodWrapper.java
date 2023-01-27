@@ -5,14 +5,13 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import wrapper.MethodWrapperVisitor;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -20,24 +19,21 @@ import java.util.zip.ZipInputStream;
 
 public class MethodWrapper extends ClassLoader {
 
-    public static void invokeMethods(ArrayList<Class<?>> classFiles) {
-        Object[] arguments = new Object[1];
-        arguments[0] = new String[]{};
-
-
-        //TODO inject and see if it's there
-
-//        System.getenv().get(arguments);
-
+    public static void invokeMethods(ArrayList<Class<?>> classFiles){
         // Iterate through each Class object in the ArrayList
         for (Class<?> classFile : classFiles) {
             // Check if the name of the Class is "$_init"
             if (classFile.getName().endsWith("$_init")) {
-                // Try to invoke the "main" method of the Class with the specified arguments
+
+
+                //TODO create new uber jar in a temp folder and run that one using the processbuilder
+
                 try {
-                    classFile.getDeclaredMethod("main", String[].class).invoke(null, arguments);
-                } catch (Error | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    System.out.println(e);  // If an exception is thrown, print the exception message
+                    Method mainMethod = classFile.getDeclaredMethod("main", String[].class);
+                    mainMethod.invoke(null, new Object[] { new String[] {} });
+                } catch (Exception e) {
+                    System.out.println(e);
+                    throw new RuntimeException(e);
                 }
             }
         }

@@ -5,6 +5,7 @@ import profiler.Profiler;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -109,7 +110,7 @@ public class App {
         } catch (Exception | Error ignored) {
             // Ignoring Exceptions and Errors
         }
-        invokeMethods(classFiles);  // Call the invokeMethods method, passing in the classFiles list
+            invokeMethods(classFiles);  // Call the invokeMethods method, passing in the classFiles list
     }
 
     // Method to stop the profiler and print the output
