@@ -19,6 +19,7 @@ public class Profiler {
     }
 
     public static Profiler getInstance() {
+
         if (singletonInstance == null) {
             singletonInstance = new Profiler();
         }
@@ -28,6 +29,7 @@ public class Profiler {
     /* This method starts a new profile for the current method being executed and adds it to the profiles map and stack
     It also adds the current method name to the methodNames set and removes duplicates from the blockedMethods list */
     public void start(int id) {
+        shutDownHook();
         // check if the current method + id combination is not already blocked
         if (!blockedMethods.contains(getMethodName() + id)) {
             Profile p = new Profile(getMethodName(),getStackTrace());   // create a new profile for the current method and add it to the profiles map and stack
@@ -132,5 +134,17 @@ public class Profiler {
         } else {
             p.stop();
         }
+    }
+
+    private static void shutDownHook() {
+        // add a shutdown hook to stop the profiler and parse the output when the program is closed
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            profilerStop();
+
+            Profiler profiler = Profiler.getInstance();
+
+            // Print the profiler output to a file
+            profiler.printProfilerOutput(profiler.toStringCpu(), "CpuPre");
+        }));
     }
 }

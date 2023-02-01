@@ -6,12 +6,10 @@ import org.objectweb.asm.ClassWriter;
 import wrapper.MethodWrapperVisitor;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -19,24 +17,22 @@ import java.util.zip.ZipInputStream;
 
 public class MethodWrapper extends ClassLoader {
 
-    public static void invokeMethods(ArrayList<Class<?>> classFiles){
-        // Iterate through each Class object in the ArrayList
-        for (Class<?> classFile : classFiles) {
-            // Check if the name of the Class is "$_init"
-            if (classFile.getName().endsWith("$_init")) {
+    public static void invokeMethods() {
+        try {
+            ProcessBuilder pb3 = new ProcessBuilder("java", "-jar", "temp.jar");
 
-
-                //TODO create new uber jar in a temp folder and run that one using the processbuilder
-
-                try {
-                    Method mainMethod = classFile.getDeclaredMethod("main", String[].class);
-                    mainMethod.invoke(null, new Object[] { new String[] {} });
-                } catch (Exception e) {
-                    System.out.println(e);
-                    throw new RuntimeException(e);
-                }
+            pb3.redirectErrorStream(true);
+            Process p = pb3.start();
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
             }
+            p.waitFor();
+        }catch (Exception e){
+            System.out.println(e);
         }
+
     }
 
     public static void findAllClassNames(String jarPath, ArrayList<String> classNames) throws IOException {
@@ -98,10 +94,14 @@ public class MethodWrapper extends ClassLoader {
     }
 
     // Print out the modified class code(DEBUG)
-    public static void printCode(String className, byte[] code) {
+    public static void printCode(String mainClassPackage, String className, byte[] code) {
+
+        String pathName = "" + mainClassPackage + "/";
+        new File(pathName).mkdirs();
+
         try {
             //Create a FileOutputStream object using the className
-            FileOutputStream fos = new FileOutputStream("debug/" + className.substring(className.lastIndexOf("/") + 1));
+            FileOutputStream fos = new FileOutputStream(pathName + className.substring(className.lastIndexOf("/") + 1));
             fos.write(code);    //Write the code to the output stream
             fos.close();    //Close the output stream
         } catch (IOException ignore) {
