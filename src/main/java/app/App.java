@@ -33,7 +33,6 @@ public class App {
     static String jarPathJava = null;   // variable to store the path of the jar file passed as an argument
     static ArrayList<String> changedPaths = new ArrayList<String>();
     static ArrayList<String> changedFiles = new ArrayList<String>();
-    static ArrayList<String> asdfasdf = new ArrayList<String>();
 
     public static void main(String[] args) throws Exception {
 
