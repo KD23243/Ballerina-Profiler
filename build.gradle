@@ -49,5 +49,5 @@ jar {
                 'Built-JDK': System.getProperty('java.version'),
                 'Main-Class': 'app.App'
     }
-    archiveName 'app.jar'
+    archiveName 'Profiler.jar'
 }

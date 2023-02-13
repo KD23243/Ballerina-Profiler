@@ -30,7 +30,7 @@ public class MethodWrapperVisitor extends ClassVisitor {
 
         // check if the className starts with the mainClassPackage + valueAnon and ends with "$_init.class"
         // and the desc starts with the strand and the name doesn't start with "$"
-        if (!className.startsWith(mainClassPackage + valueAnon) && !className.endsWith("$_init.class") && desc.startsWith(strand) && !name.startsWith("$")){
+        if (!className.startsWith(mainClassPackage + valueAnon) && !className.contains("init") && desc.startsWith(strand) && !name.startsWith("$")){
             return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);  // If the above condition is true, return a new MethodWrapperAdapter
         }
         // check if the className starts with the mainClassPackage + valueAnon
@@ -39,11 +39,23 @@ public class MethodWrapperVisitor extends ClassVisitor {
             if (desc.startsWith(strand) && name.startsWith("$") && !name.startsWith("$anonType") && !name.startsWith("$init")){
                 return new MethodWrapperAdapter(access, methodVisitor, name, desc, 1);  // If the above condition is true, return a new MethodWrapperAdapter
             }
-            // check if the name ends with "$init"
-            else if (name.endsWith("$init")){
-                return new ResourceWrapperAdapter(access, methodVisitor, name, desc);   // If the above condition is true, return a new ResourceWrapperAdapter
-            }
         }
+
+
+
+
+//        // check if the className starts with the mainClassPackage + valueAnon and ends with "$_init.class"
+//        // and the desc starts with the strand and the name doesn't start with "$"
+//        if (!className.startsWith(mainClassPackage + valueAnon) && !className.endsWith("$_init.class") && desc.startsWith(strand) && !name.startsWith("$")){
+//            return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);  // If the above condition is true, return a new MethodWrapperAdapter
+//        }
+//        // check if the className starts with the mainClassPackage + valueAnon
+//        else if (className.startsWith(mainClassPackage + valueAnon)){
+//            // check if the desc starts with the strand and the name starts with "$" and doesn't start with "$anonType" and "$init"
+//            if (desc.startsWith(strand) && name.startsWith("$") && !name.startsWith("$anonType") && !name.startsWith("$init")){
+//                return new MethodWrapperAdapter(access, methodVisitor, name, desc, 1);  // If the above condition is true, return a new MethodWrapperAdapter
+//            }
+//        }
         return methodVisitor;   // If none of the above conditions are true, return the original methodVisitor
     }
 }

@@ -2,8 +2,9 @@ package parser;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,69 +16,76 @@ import java.util.List;
 public class CpuParser {
     public static void initializeCPUParser() throws Exception {
 
-        String file = "CpuPre.json";    // File path of the Profiler Output json file
-        String jsonInput = readFileAsString(file);  // Read the json file as a string
+        try {
 
-        // Removes the trailing comma
-        StringBuffer jsonInputStringBuffer= new StringBuffer(jsonInput);
-        jsonInputStringBuffer.deleteCharAt(jsonInputStringBuffer.length()-3);
-        jsonInput = jsonInputStringBuffer.toString();
 
-        ObjectMapper mapper = new ObjectMapper();   // Create an ObjectMapper object to map json to Java objects
-        List<Item> input = mapper.readValue(jsonInput, new TypeReference<List<Item>>(){});  // Map the json input to a list of Item objects
+            String file = "CpuPre.json";    // File path of the Profiler Output json file
+            String jsonInput = readFileAsString(file);  // Read the json file as a string
 
-        // Create a Data object to store the output
-        Data output = new Data();
-        output.name = "Root";
-        output.value = input.get(0).time;
-        output.children = new ArrayList<>();
+            // Removes the trailing comma
+            StringBuffer jsonInputStringBuffer = new StringBuffer(jsonInput);
+            jsonInputStringBuffer.deleteCharAt(jsonInputStringBuffer.length() - 3);
+            jsonInput = jsonInputStringBuffer.toString();
 
-        // Iterate through the input list
-        for (Item item : input) {
-            if (item.stackTrace.size() == 1) {
-                output.value = Math.max(output.value, item.time);   // Update the value of the root node
-            } else {
-                Data current = output;
-                // Iterate through the stack trace
-                for (int i = 1; i < item.stackTrace.size(); i++) {
-                    String name = item.stackTrace.get(i);
-                    boolean found = false;
-                    // Check if the child node already exists
-                    for (Data child : current.children) {
-                        if (child.name.equals(name)) {
-                            // Update the value of the existing child node
-                            child.value = Math.max(child.value, item.time);
-                            current = child;
-                            found = true;
-                            break;
+            ObjectMapper mapper = new ObjectMapper();   // Create an ObjectMapper object to map json to Java objects
+            List<Item> input = mapper.readValue(jsonInput, new TypeReference<List<Item>>() {
+            });  // Map the json input to a list of Item objects
+
+            // Create a Data object to store the output
+            Data output = new Data();
+            output.name = "Root";
+            output.value = input.get(0).time;
+            output.children = new ArrayList<>();
+
+            // Iterate through the input list
+            for (Item item : input) {
+                if (item.stackTrace.size() == 1) {
+                    output.value = Math.max(output.value, item.time);   // Update the value of the root node
+                } else {
+                    Data current = output;
+                    // Iterate through the stack trace
+                    for (int i = 1; i < item.stackTrace.size(); i++) {
+                        String name = item.stackTrace.get(i);
+                        boolean found = false;
+                        // Check if the child node already exists
+                        for (Data child : current.children) {
+                            if (child.name.equals(name)) {
+                                // Update the value of the existing child node
+                                child.value = Math.max(child.value, item.time);
+                                current = child;
+                                found = true;
+                                break;
+                            }
                         }
-                    }
-                    if (!found) {
-                        // Create a new child node if it doesn't exist
-                        Data newChild = new Data();
-                        newChild.name = name;
-                        newChild.value = item.time;
-                        newChild.children = new ArrayList<>();
-                        current.children.add(newChild);
-                        current = newChild;
+                        if (!found) {
+                            // Create a new child node if it doesn't exist
+                            Data newChild = new Data();
+                            newChild.name = name;
+                            newChild.value = item.time;
+                            newChild.children = new ArrayList<>();
+                            current.children.add(newChild);
+                            current = newChild;
+                        }
                     }
                 }
             }
+
+            String jsonString = mapper.writeValueAsString(output);  // Convert the output data object to a json string
+            JSONObject jsonObject = new JSONObject(jsonString); // Convert the json string to a JSONObject
+
+            int totalTime = getTotalTime(jsonObject);   // Calculate the total time
+            int defaultTime = getDefaultTime(jsonObject);   // Calculate the default time
+            int leastTime = getLeastTime(jsonObject);   // Calculate the least time it takes for a function
+
+            // Check if the default time is less than or equal to 0
+            if (defaultTime <= 0 || defaultTime < leastTime) {
+                jsonObject.remove("value"); // Remove the "value" key
+                jsonObject.put("value", totalTime); // Add the total time as the value
+            }
+            writer(jsonObject.toString(), "ProfilerOutput.json");  // write the json object to a file
+
+        } catch (Exception | Error ignore) {
         }
-
-        String jsonString = mapper.writeValueAsString(output);  // Convert the output data object to a json string
-        JSONObject jsonObject = new JSONObject(jsonString); // Convert the json string to a JSONObject
-
-        int totalTime = getTotalTime(jsonObject);   // Calculate the total time
-        int defaultTime = getDefaultTime(jsonObject);   // Calculate the default time
-        int leastTime = getLeastTime(jsonObject);   // Calculate the least time it takes for a function
-
-        // Check if the default time is less than or equal to 0
-        if (defaultTime <= 0 || defaultTime < leastTime){
-            jsonObject.remove("value"); // Remove the "value" key
-            jsonObject.put("value", totalTime); // Add the total time as the value
-        }
-        writer(jsonObject.toString(),"CpuPost.json");  // write the json object to a file
     }
 
     public static int getTotalTime(JSONObject node) {
@@ -87,7 +95,7 @@ public class CpuParser {
             // Iterate through the children array
             for (int i = 0; i < children.length(); i++) {
                 // Get the value of the child node and check if the value is not equal to -1
-                if (children.getJSONObject(i).getInt("value") != -1){
+                if (children.getJSONObject(i).getInt("value") != -1) {
                     total += children.getJSONObject(i).getInt("value");  // Add the value to the total time
                 }
             }
@@ -102,7 +110,7 @@ public class CpuParser {
             // Iterate through the children array
             for (int i = 0; i < children.length(); i++) {
                 // Get the value of the child node and check if the value is not equal to -1
-                if (children.getJSONObject(i).getInt("value") != -1){
+                if (children.getJSONObject(i).getInt("value") != -1) {
                     timeStamps.add(children.getJSONObject(i).getInt("value")); // Add the value to the timestamps list
                 }
             }
@@ -115,8 +123,7 @@ public class CpuParser {
         return (int) node.get("value"); // Get the default Timestamp
     }
 
-    public static String readFileAsString(String file)throws Exception
-    {
+    public static String readFileAsString(String file) throws Exception {
         return new String(Files.readAllBytes(Paths.get(file)));  // Read Files as a String
     }
 
@@ -129,7 +136,7 @@ public class CpuParser {
             myWriter.flush();   // Flush the writer
         } catch (IOException e) {
             System.out.println("An error occurred.");    // Print an error message
-            e.printStackTrace();    // Print the stack trace of the exception
+//            e.printStackTrace();    // Print the stack trace of the exception
         }
     }
 

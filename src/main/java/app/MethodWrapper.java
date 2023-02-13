@@ -15,12 +15,16 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static app.App.*;
+
 public class MethodWrapper extends ClassLoader {
 
-    public static void invokeMethods() {
-        try {
-            ProcessBuilder pb3 = new ProcessBuilder("java", "-jar", "temp.jar");
+    public static void invokeMethods() throws IOException, InterruptedException {
+        System.out.println();
+        System.out.println(ANSI_ORANGE + "[5/6] Running Executable..." + ANSI_RESET);
 
+        if (originArgs != null){
+            ProcessBuilder pb3 = new ProcessBuilder("java", "-jar", "temp.jar", originArgs);
             pb3.redirectErrorStream(true);
             Process p = pb3.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -29,9 +33,19 @@ public class MethodWrapper extends ClassLoader {
                 System.out.println(line);
             }
             p.waitFor();
-        }catch (Exception e){
-            System.out.println(e);
+        }else {
+            ProcessBuilder pb6 = new ProcessBuilder("java", "-jar", "temp.jar");
+            pb6.redirectErrorStream(true);
+            Process p1 = pb6.start();
+            BufferedReader br = new BufferedReader(new InputStreamReader(p1.getInputStream()));
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+            p1.waitFor();
         }
+
+
 
     }
 
@@ -51,6 +65,7 @@ public class MethodWrapper extends ClassLoader {
             URL manifestURL = manifestClassLoader.findResource("META-INF/MANIFEST.MF"); // Find the URL of the manifest file
             Manifest manifest = new Manifest(manifestURL.openStream()); // Create a new Manifest object using the input stream from the manifest file
             Attributes attributes = manifest.getMainAttributes();   // Get the main attributes of the manifest
+
             return attributes.getValue("Main-Class").replace(".$_init", "").replace(".", "/");  // Return the value of the Main-Class attribute, replacing any ".$_init" and "." with "/"
         } catch (Exception | Error ignore) {
             System.out.println(ignore); // Print the error message if any exception or error occurs and return null if the main class could not be found
@@ -96,12 +111,17 @@ public class MethodWrapper extends ClassLoader {
     // Print out the modified class code(DEBUG)
     public static void printCode(String mainClassPackage, String className, byte[] code) {
 
-        String pathName = "" + mainClassPackage + "/";
-        new File(pathName).mkdirs();
+        String pathName = className;
+
+        int lastSlashIndex = pathName.lastIndexOf('/');
+        String output = pathName.substring(0, lastSlashIndex);
+
+        new File(output).mkdirs();
+
 
         try {
             //Create a FileOutputStream object using the className
-            FileOutputStream fos = new FileOutputStream(pathName + className.substring(className.lastIndexOf("/") + 1));
+            FileOutputStream fos = new FileOutputStream(pathName);
             fos.write(code);    //Write the code to the output stream
             fos.close();    //Close the output stream
         } catch (IOException ignore) {

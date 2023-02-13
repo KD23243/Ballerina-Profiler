@@ -31,4 +31,3 @@ public class ResourceWrapperAdapter extends AdviceAdapter {
         mv.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "stop", "()V", false);
     }
 }
-
