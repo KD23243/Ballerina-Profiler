@@ -4,12 +4,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Profile {
 
-    private static final String CPU_FORMAT_STRING = "{'\"time\"': '\"%s\"', '\"stackTrace\"': '%s'},";  // constant string format for JSON output
-    private static final String MEM_FORMAT_STRING = "{'\"mem\"': '\"%s\"', '\"stackTrace\"': '%s'},";  // constant string format for JSON output
-    private String name;    // name of the profile
-    private String trace;   // trace of the profile
+    private static final String CPU_FORMAT_STRING = "{'\"time\"': '\"%s\"', '\"stackTrace\"': '%s'},"; // constant string format for JSON output
+    private static final String MEM_FORMAT_STRING = "{'\"mem\"': '\"%s\"', '\"stackTrace\"': '%s'},"; // constant string format for JSON output
+    private String name; // name of the profile
+    private String trace; // trace of the profile
     private long startTime; // start time of the profile
-    private long time;  // time duration of the profile
+    private long time; // time duration of the profile
     private String displayTime; // display time of the profile
     private int memoryUsage;
     // constructor
@@ -23,7 +23,7 @@ public class Profile {
     // starts the profile
     public void start() {
         this.startTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
-        this.memoryUsage = ((int) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576);
+        this.memoryUsage = ((int)(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576);
     }
 
     // stops the profile
@@ -34,9 +34,9 @@ public class Profile {
     // get formatted stats of the profile
     private String getFormattedStats(String format) {
 
-        if (this.time == Long.MAX_VALUE){
+        if (this.time == Long.MAX_VALUE) {
             displayTime = "-1";
-        }else {
+        } else {
             displayTime = String.valueOf(this.time);
         }
         return String.format(format, this.displayTime, this.trace);

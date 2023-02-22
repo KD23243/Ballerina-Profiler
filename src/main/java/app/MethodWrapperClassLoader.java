@@ -8,8 +8,8 @@ public class MethodWrapperClassLoader extends ClassLoader {
         super(parent);
     }
 
-    protected Class<?> loadClass(byte[] code) {
-        Class<?> classOut = null;
+    protected Class < ? > loadClass(byte[] code) {
+        Class < ? > classOut = null;
 
         String name = readClassName(code);
 
