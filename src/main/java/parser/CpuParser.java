@@ -9,9 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class CpuParser {
     public static void initializeCPUParser() throws Exception {
@@ -28,6 +26,37 @@ public class CpuParser {
 
             ObjectMapper mapper = new ObjectMapper(); // Create an ObjectMapper object to map json to Java objects
             List < Item > input = mapper.readValue(jsonInput, new TypeReference < List < Item >> () {}); // Map the json input to a list of Item objects
+
+//            // Create a HashMap to keep track of unique stack traces and their corresponding time values
+//            Map<List<String>, Integer> stackTraceMap = new HashMap<>();
+//            for (Item item : input) {
+//                List<String> stackTrace = item.stackTrace;
+////                if (!stackTrace.get(stackTrace.size() - 1).endsWith("_init.$moduleInit()")) {
+//                    // Only consider stack traces that do not end with "_init.$moduleInit()"
+//                    if (stackTraceMap.containsKey(stackTrace)) {
+//                        // If the stack trace already exists in the map, add its time to the existing value
+//                        int totalTime = stackTraceMap.get(stackTrace) + item.time;
+//                        stackTraceMap.put(stackTrace, totalTime);
+//                    } else {
+//                        // If the stack trace is new, add it to the map with its time as the value
+//                        stackTraceMap.put(stackTrace, item.time);
+//                    }
+////                }
+//            }
+//
+//// Create a new list of items where each item contains a unique stack trace and its corresponding total time
+//            List<Item> output1 = new ArrayList<>();
+//            for (Map.Entry<List<String>, Integer> entry : stackTraceMap.entrySet()) {
+//                List<String> stackTrace = entry.getKey();
+//                int totalTime = entry.getValue();
+//                Item newItem = new Item();
+//                newItem.time = totalTime;
+//                newItem.stackTrace = stackTrace;
+//                output1.add(newItem);
+//            }
+//
+//            input = output1;
+//
 
             // Create a Data object to store the output
             Data output = new Data();
@@ -83,9 +112,8 @@ public class CpuParser {
             writer(jsonObject.toString(), "ProfilerOutput.json"); // write the json object to a file
             System.out.println(" ○ ProfilerOutput.json");
 
-        } catch (Exception | Error ignore) {
-            System.out.println("no pre");
-
+        } catch (Exception | Error e) {
+            System.out.println(e);
         }
     }
 

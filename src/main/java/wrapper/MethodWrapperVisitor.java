@@ -4,8 +4,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import static app.App.utilPaths;
-
 public class MethodWrapperVisitor extends ClassVisitor {
 
     private final String mainClassPackage;

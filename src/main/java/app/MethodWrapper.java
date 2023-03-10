@@ -15,15 +15,16 @@ import static app.App.*;
 public class MethodWrapper extends ClassLoader {
 
     public static void invokeMethods() throws IOException, InterruptedException {
-        System.out.println();
-        System.out.println();
-        System.out.println(ANSI_ORANGE + "[5/6] Running Executable..." + ANSI_RESET);
+
+
 
         // If originArgs is not null, create a ProcessBuilder object with arguments, start it, and read the output.
         if (originArgs != null) {
             ProcessBuilder pb3 = new ProcessBuilder("java", "-jar", "temp.jar", originArgs);
             pb3.redirectErrorStream(true);
             Process p = pb3.start();
+            p.waitFor();
+            System.out.println(ANSI_ORANGE + "[5/6] Running Executable..." + ANSI_RESET);
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line;
             while ((line = br.readLine()) != null) {
@@ -36,6 +37,7 @@ public class MethodWrapper extends ClassLoader {
             ProcessBuilder pb6 = new ProcessBuilder("java", "-jar", "temp.jar");
             pb6.redirectErrorStream(true);
             Process p1 = pb6.start();
+            System.out.println(ANSI_ORANGE + "[5/6] Running Executable..." + ANSI_RESET);
             BufferedReader br = new BufferedReader(new InputStreamReader(p1.getInputStream()));
             String line;
             while ((line = br.readLine()) != null) {
@@ -94,7 +96,7 @@ public class MethodWrapper extends ClassLoader {
     }
 
     // Print out the modified class code(DEBUG)
-    public static void printCode(String mainClassPackage, String className, byte[] code) {
+    public static void printCode(String className, byte[] code) {
 
         String pathName = className;
 

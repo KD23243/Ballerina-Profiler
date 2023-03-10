@@ -5,11 +5,8 @@ import org.apache.commons.io.FileUtils;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.*;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -27,16 +24,19 @@ public class App {
 
     // Define public static variables for the program
     public static int exitCode = 0; // Exit code for the program
-    public static boolean showAll = true; // Whether to show all output or not
-    public static String unwantedString = null; // String of all the function to exclude from output
+    public static boolean showAll = false; // Whether to show all output or not
     public static String originArgs = null; // Original command line arguments for the JAR
     public static String jarPathJava = null; // Path to JAR file
 
-    public static ArrayList < String > instrumentedPaths = new ArrayList < > (); // Paths of instrumented JAR files
-    public static ArrayList < String > instrumentedFiles = new ArrayList < > (); // Names of instrumented JAR files
-    public static ArrayList < String > utilInitPaths = new ArrayList < > (); // Paths of utility JAR files
-    public static ArrayList < String > utilPaths = new ArrayList < > (); // Additional utility JAR files
-    public static String[] unwantedPaths = null; // Paths to exclude from instrumenting
+    public static ArrayList<String> instrumentedPaths = new ArrayList<>(); // Paths of instrumented JAR files
+    public static ArrayList<String> instrumentedFiles = new ArrayList<>(); // Names of instrumented JAR files
+    public static ArrayList<String> utilInitPaths = new ArrayList<>(); // Paths of utility JAR files
+    public static ArrayList<String> utilPaths = new ArrayList<>(); // Additional utility JAR files
+    public static ArrayList<String> skippedPaths = new ArrayList<>(); // Additional utility JAR files
+
+
+    public static Map<String, byte[]> modifiedClassDefs = new HashMap<String, byte[]>();
+
 
     public static void main(String[] args) throws Exception {
         shutDownHookApp(); // Register a shutdown hook to handle graceful shutdown of the application
@@ -45,7 +45,8 @@ public class App {
         extractTheProfiler(); // Extract the profiler used by the program
         createTheTempJar(jarPathJava); // Create a temporary JAR file at the given location
         initialize(jarPathJava); // Initialize profiling
-        invokeMethods(); // Invoke the methods in the JAR file
+
+
     }
 
     private static void printHeader() {
@@ -70,19 +71,9 @@ public class App {
                     case "--arguments":
                         originArgs = args[i + 1];
                         break;
-                    // Set the unwanted string to exclude from output and store the paths to skip in a file
-                    case "--skip":
-                        unwantedString = args[i + 1];
-                        unwantedPaths = unwantedString.split(",");
-                        PrintWriter pr = new PrintWriter("skippedPaths.txt");
-                        for (int x = 0; x < unwantedPaths.length; x++) {
-                            pr.println(unwantedPaths[x]);
-                        }
-                        pr.close();
-                        break;
                     // Set the program to only show minimum output
-                    case "--minimum":
-                        showAll = false;
+                    case "--all":
+                        showAll = true;
                         break;
                 }
             }
@@ -140,8 +131,8 @@ public class App {
         System.out.println(ANSI_ORANGE + "[3/7] Performing Analysis..." + ANSI_RESET);
 
         // Create two empty ArrayLists to hold class files and class names
-        ArrayList < Class < ? >> classFiles = new ArrayList < > ();
-        ArrayList < String > classNames = new ArrayList < > ();
+        ArrayList<Class<?>> classFiles = new ArrayList<>();
+        ArrayList<String> classNames = new ArrayList<>();
 
         // Attempt to find all class names in the given jar file and then find util classes
         try {
@@ -158,68 +149,107 @@ public class App {
         // Create a JarFile object by passing in the path to the Jar file
         try (JarFile jarFile = new JarFile(jarPath)) {
 
-            URL[] urls = new URL[] {
-                    new File(jarPath).toURI().toURL()
-            }; // Create an array of URLs, with a single URL being the Jar file's location
+            URL[] urls = new URL[]{new File(jarPath).toURI().toURL()}; // Create an array of URLs, with a single URL being the Jar file's location
+
             URLClassLoader parentClassLoader = new URLClassLoader(urls); // Create a new URLClassLoader using the array of URLs
             MethodWrapperClassLoader customClassLoader = new MethodWrapperClassLoader(parentClassLoader); // Create a new URLClassLoader using the array of URLs
             String mainClassPackage = mainClassFinder(parentClassLoader); // Find the main class package using the mainClassFinder method
 
             // Iterate through the class names in the "classNames" list
-            for (String className: classNames) {
+            for (String className : classNames) {
 
                 byte[] code;
                 InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className)); // Get an InputStream for the current class in the Jar file
+
                 try {
                     assert mainClassPackage != null;
                     String pathOrigin = mainClassPackage.split("/")[0];
 
                     boolean baseSatisfied = className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$");
 
-                    if (showAll) {
+
+                    if (!showAll) {
                         if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
+                            String replacedPath = className.replace(".class", "");
+                            replacedPath = replacedPath.replace("/", ".");
+
+                            skippedPaths.add(replacedPath);
+
                             if (baseSatisfied) {
                                 code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
-                                printCode(className, className, code); // Print out the modified class code(DEBUG)
+                                printCode(className, code); // Print out the modified class code(DEBUG)
+                                modifiedClassDefs.put(className, code);
                             } else {
                                 code = streamToByte(inputStream); // Otherwise, just get the class code
                             }
+
+
                             classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
                         }
                     } else {
-                        if (className.startsWith(pathOrigin)) {
+                        if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
+
+                            skippedPaths.add("showAll");
+
                             if (baseSatisfied) {
                                 code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
-                                printCode(className, className, code); // Print out the modified class code(DEBUG)
+                                printCode(className, code); // Print out the modified class code(DEBUG)
                             } else {
                                 code = streamToByte(inputStream); // Otherwise, just get the class code
                             }
+
                             classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
                         }
                     }
 
-                } catch (IOException ignored) {}
+                } catch (IOException ignored) {
+                }
             }
 
+            PrintWriter pr1 = new PrintWriter("skippedPaths.txt");
+            String listString = String.join(", ", skippedPaths);
+            pr1.println(listString);
+            pr1.close();
+
             System.out.println(" ○ Classes Reached: " + classFiles.size());
-        } catch (Exception | Error ignored) {}
+        } catch (Exception | Error ignored) {
+        }
+
         try {
             modifyTheJar(); //Modify the JAR file by overwriting the original files with the instrumented files.
-        } catch (Exception | Error ignored) {}
+//            dumpjar1();
+        } catch (Exception | Error ignored) {
+        }
     }
 
-    private static void modifyTheJar() {
-        final File userDir = new File(System.getProperty("user.dir")); // Get the user directory
-        listAllFiles(userDir); // List all files in the user directory and its subdirectories
-        System.out.println(" ○ Classes Changed: " + instrumentedFiles.size()); // Print the number of instrumented files
+    private static void modifyTheJar() throws InterruptedException, IOException {
 
-        List < String > changedDirs = instrumentedFiles.stream().distinct().collect(Collectors.toList()); // Get a list of the directories containing instrumented files
-
-        System.out.print(" ○ Directories Loaded: ");
-        for (int i = 0; i < changedDirs.size() + 1; i++) { // Iterate through the directories
-            System.out.print("*"); // Print a * for each directory loaded
-            overWriteJar(changedDirs.get(i)); // Overwrite the JAR file with the instrumented files in the current directory
+        try {
+            final File userDir = new File(System.getProperty("user.dir")); // Get the user directory
+            listAllFiles(userDir); // List all files in the user directory and its subdirectories
+            List<String> changedDirs = instrumentedFiles.stream().distinct().collect(Collectors.toList()); // Get a list of the directories containing instrumented files
+            loadDirectories(changedDirs);
+            System.out.println(" ○ Classes Changed: " + instrumentedFiles.size()); // Print the number of instrumented files
+        }finally {
+            invokeMethods();
         }
+    }
+
+    private static void loadDirectories(List<String> changedDirs) throws IOException, InterruptedException {
+
+        int changedDirsSize = changedDirs.size() - 1;
+        for (int i = 0; i < changedDirs.size() + 1; i++) {
+            try {
+                ProcessBuilder pb = new ProcessBuilder("jar", "uf", "temp.jar");
+                pb.redirectErrorStream(true);
+                pb.command("jar", "uf", "temp.jar", changedDirs.get(i)).start().waitFor();
+                System.out.print("\r" + " ○ Directories Loaded: " + i + "/" + changedDirsSize);
+            }catch (Exception e){
+
+            }
+        }
+        System.out.println();
+
     }
 
     public static void listAllFiles(final File userDirectory) {
@@ -229,7 +259,8 @@ public class App {
         absolutePath = absolutePath.replaceAll("temp.jar", "");
 
         // Iterate through all files and directories in the userDirectory
-        for (final File fileEntry: userDirectory.listFiles()) {
+        for (final File fileEntry : userDirectory.listFiles()) {
+
 
             // If the fileEntry is a directory, recursively call this method to check for any nested files
             if (fileEntry.isDirectory()) {
@@ -260,7 +291,7 @@ public class App {
         }
     }
 
-    private static void findAllClassNames(String jarPath, ArrayList < String > classNames) throws IOException {
+    private static void findAllClassNames(String jarPath, ArrayList<String> classNames) throws IOException {
         ZipInputStream zipFile = new ZipInputStream(new FileInputStream(jarPath)); // Create a ZipInputStream to read the jar file
         // Iterate through all the entries in the jar file
         for (ZipEntry entry = zipFile.getNextEntry(); entry != null; entry = zipFile.getNextEntry()) {
@@ -271,10 +302,10 @@ public class App {
         }
     }
 
-    private static void findUtilClasses(ArrayList < String > classNames) {
+    private static void findUtilClasses(ArrayList<String> classNames) {
 
         // Look for utility initialization classes and add their paths to the utilInitPaths list.
-        for (String className: classNames) {
+        for (String className : classNames) {
             if (className.endsWith("$_init.class")) {
                 int lastSlashIndex = className.lastIndexOf('/');
                 String output = className.substring(0, lastSlashIndex) + "/";
@@ -283,11 +314,11 @@ public class App {
         }
 
         // Remove duplicates from the utilInitPaths list.
-        utilInitPaths = (ArrayList < String > ) utilInitPaths.stream().distinct().collect(Collectors.toList());
+        utilInitPaths = (ArrayList<String>) utilInitPaths.stream().distinct().collect(Collectors.toList());
 
         // Look for other utility classes and add their paths to the utilPaths list.
-        for (String s1: classNames) {
-            for (String s2: utilInitPaths) {
+        for (String s1 : classNames) {
+            for (String s2 : utilInitPaths) {
                 if (s1.startsWith(s2)) {
                     String process = s1.replace(s2, "");
                     if (!process.contains("/")) {
@@ -298,38 +329,48 @@ public class App {
         }
     }
 
-    private static void overWriteJar(String changedDirs) {
-        try {
-            // Use ProcessBuilder to run the command and redirect its output to the console
-            ProcessBuilder pb3 = new ProcessBuilder("jar", "uf", "temp.jar", changedDirs);
-            pb3.redirectErrorStream(true);
-            Process process = pb3.start();
-            // Wait for the process to finish before continuing
-            process.waitFor();
-        } catch (Exception ignored) {}
-    }
-
     private static void shutDownHookApp() {
         // Add a shutdown hook to stop the profiler and parse the output when the program is closed.
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // Delete the instrumented directories.
             try {
-                for (String instrumentedPath: instrumentedPaths) {
+                for (String instrumentedPath : instrumentedPaths) {
                     FileUtils.deleteDirectory(new File(instrumentedPath));
                 }
                 // Delete the profiler and temporary jar directories.
                 FileUtils.deleteDirectory(new File("profiler"));
-                FileUtils.delete(new File("temp.jar"));
+//                FileUtils.delete(new File("temp.jar"));
                 System.out.println("\n" + ANSI_ORANGE + "[6/6] Generating Output..." + ANSI_RESET);
                 Thread.sleep(1000);
                 initializeCPUParser(); // Initialize the CPU parser.
                 // Delete the skipped paths text file and CPU pre JSON file.
                 FileUtils.delete(new File("skippedPaths.txt"));
-                FileUtils.delete(new File("CpuPre.json"));
+//                FileUtils.delete(new File("CpuPre.json"));
                 // Print the produced artifacts.
                 System.out.println("--------------------------------------------------------------------------------");
                 System.out.println(ANSI_YELLOW + "Produced Artifacts" + ANSI_RESET);
-            } catch (Exception ignore) {}
+                deleteTmpData();
+            } catch (Exception ignore) {
+            }
         }));
     }
+
+
+    private static void deleteTmpData() {
+        String directoryPath = System.getProperty("user.dir");
+        String filePrefix = "jartmp";
+
+        File directory = new File(directoryPath);
+        File[] files = directory.listFiles();
+
+        for (File file : files) {
+            if (file.getName().startsWith(filePrefix)) {
+                FileUtils.deleteQuietly(file);
+            }
+        }
+    }
 }
+
+
+//check module init
+//call init them sleep> normal
