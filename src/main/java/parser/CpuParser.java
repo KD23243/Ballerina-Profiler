@@ -74,8 +74,7 @@ public class CpuParser {
             jsonObject.remove("value"); // Remove the "value" key
             jsonObject.put("value", totalTime); // Add the total time as the value
 
-            writer(jsonObject.toString(), "ProfilerOutput.json"); // write the json object to a file
-            System.out.println(" ○ ProfilerOutput.json");
+            writer(jsonObject.toString(), "performance_report.json"); // write the json object to a file
 
         } catch (Exception | Error e) {
             System.out.println(e);

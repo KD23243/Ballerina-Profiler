@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -23,6 +24,7 @@ public class App {
     public static final String ANSI_YELLOW = "\033[1;93m";
 
     // Define public static variables for the program
+    public static long profilerStartTime = 0;
     public static int exitCode = 0; // Exit code for the program
     public static boolean showAll = false; // Whether to show all output or not
     public static String originArgs = null; // Original command line arguments for the JAR
@@ -33,12 +35,10 @@ public class App {
     public static ArrayList<String> utilInitPaths = new ArrayList<>(); // Paths of utility JAR files
     public static ArrayList<String> utilPaths = new ArrayList<>(); // Additional utility JAR files
     public static ArrayList<String> skippedPaths = new ArrayList<>(); // Additional utility JAR files
-
-
     public static Map<String, byte[]> modifiedClassDefs = new HashMap<String, byte[]>();
 
-
     public static void main(String[] args) throws Exception {
+        profilerStartTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
         shutDownHookApp(); // Register a shutdown hook to handle graceful shutdown of the application
         printHeader(); // Print the program header
         handleArguments(args); // Handle command line arguments
@@ -48,7 +48,6 @@ public class App {
     }
 
     private static void printHeader() {
-        System.out.println();
         System.out.println(ANSI_GRAY + "================================================================================" + ANSI_RESET);
         System.out.println(ANSI_ORANGE + "Ballerina Profiler" + ANSI_RESET + ": Profiling...");
         System.out.println(ANSI_GRAY + "================================================================================" + ANSI_RESET);
@@ -220,19 +219,17 @@ public class App {
             final File userDir = new File(System.getProperty("user.dir")); // Get the user directory
             listAllFiles(userDir); // List all files in the user directory and its subdirectories
             List<String> changedDirs = instrumentedFiles.stream().distinct().collect(Collectors.toList()); // Get a list of the directories containing instrumented files
+            System.out.println(" ○ Classes Modified: " + instrumentedFiles.size()); // Print the number of instrumented files
             loadDirectories(changedDirs);
-            System.out.println(" ○ Classes Changed: " + instrumentedFiles.size()); // Print the number of instrumented files
         }finally {
             invokeMethods();
         }
     }
 
     private static void loadDirectories(List<String> changedDirs) {
-
         int changedDirsSize = changedDirs.size() - 1;
-
         try {
-            List<String> command = new ArrayList<String>();
+            List<String> command = new ArrayList<>();
             command.add("jar");
             command.add("uf");
             command.add("temp.jar");
@@ -245,17 +242,6 @@ public class App {
         } catch (Exception e) {
             System.err.println("Error loading directories: " + e.getMessage());
         }
-
-
-//        int changedDirsSize = changedDirs.size() - 1;
-//        for (int i = 0; i < changedDirs.size() + 1; i++) {
-//            try {
-//                ProcessBuilder pb = new ProcessBuilder("jar", "uf", "temp.jar");
-//                pb.redirectErrorStream(true);
-//                pb.command("jar", "uf", "temp.jar", changedDirs.get(i)).start().waitFor();
-//                System.out.print("\r" + " ○ Directories Loaded: " + i + "/" + changedDirsSize);
-//            }catch (Exception e){}
-//        }
     }
 
     public static void listAllFiles(final File userDirectory) {
@@ -339,6 +325,7 @@ public class App {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // Delete the instrumented directories.
             try {
+                long profilerTotalTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - profilerStartTime;
                 for (String instrumentedPath : instrumentedPaths) {
                     FileUtils.deleteDirectory(new File(instrumentedPath));
                 }
@@ -351,9 +338,9 @@ public class App {
                 // Delete the skipped paths text file and CPU pre JSON file.
                 FileUtils.delete(new File("skippedPaths.txt"));
                 FileUtils.delete(new File("CpuPre.json"));
-                // Print the produced artifacts.
+                System.out.println(" ○ Execution Time: " + profilerTotalTime/1000 + " Seconds");
+                System.out.println(" ○ Output: performance_report.json"); // Print the number of instrumented files
                 System.out.println("--------------------------------------------------------------------------------");
-                System.out.println(ANSI_YELLOW + "Produced Artifacts" + ANSI_RESET);
                 deleteTmpData();
             } catch (Exception ignore) {}
         }));
