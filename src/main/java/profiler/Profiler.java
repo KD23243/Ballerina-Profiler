@@ -12,16 +12,13 @@ public class Profiler {
     private static Profiler singletonInstance = null;
     private final HashMap<String, Profile> profiles = new HashMap<>();
     private final ArrayList<Profile> profilesStack = new ArrayList<>();
-
     private ArrayList<String> blockedMethods = new ArrayList<>();
     private List<String> methodNames = new ArrayList<>();
-
     private static List<String> skippedList = new ArrayList<>();
     private static Set<String> skippedClasses = new HashSet<>(skippedList);
 
     protected Profiler() {
         shutDownHookProfiler();
-
         try {
             String content = Files.readString(Paths.get("skippedPaths.txt"));
             List<String> skippedListRead = new ArrayList<String>(Arrays.asList(content.split(", ")));
@@ -30,7 +27,6 @@ public class Profiler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public static Profiler getInstance() {
@@ -114,24 +110,18 @@ public class Profiler {
 
 
     public String toString() {
-
         StringBuffer sb = new StringBuffer();
-
         sb.append("[");
         for (int i = 0; i < this.profilesStack.size(); i++) {
             sb.append(this.profilesStack.get(i) + "\n");
         }
         sb.append("]");
-
         return sb.toString();
-
     }
 
     public void printProfilerOutput(String dataStream) {
         try {
             FileWriter myWriter = new FileWriter("CpuPre.json");
-//            FileWriter myWriter = new FileWriter("Profile.txt");
-
             myWriter.write(dataStream);
             myWriter.close();
         } catch (IOException var3) {
@@ -139,7 +129,6 @@ public class Profiler {
             var3.printStackTrace();
         }
     }
-
 
     public static void shutDownHookProfiler() {
         // add a shutdown hook to stop the profiler and parse the output when the program is closed
@@ -151,19 +140,13 @@ public class Profiler {
 
     // This method returns a string representation of the current call stack in the form of a list of strings
     public String getStackTrace() {
-
         ArrayList<String> result = new ArrayList<>();
         ArrayList<String> filteredFrames = new ArrayList<>();
-
         //Uses the StackWalker class to get a list of stack frames representing the current call stack
         final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
-
-
         stack.subList(0, 2).clear(); //Removes the first 2 stack frames (index 0 and 1) and reverses the order of the remaining stack frames
         Collections.reverse(stack); //Reverse the collection
         stack.subList(0, 2).clear(); //Removes the top 2 stack frames
-
-
         // Loop over stack frames and add filtered frames to a list of strings
         for (StackWalker.StackFrame frame : stack) {
             if (skippedClasses.contains(frame.getClassName())) {
@@ -172,17 +155,14 @@ public class Profiler {
                 filteredFrames.add(frameString);
             }
         }
-
         // Loop over filtered frame strings and add non-generated ones to a result list
         for (String frameString : filteredFrames) {
             if (!frameString.contains("$gen")) {
                 result.add(frameString);
             }
         }
-
         // Convert result list to a string and return it
         return result.toString();
-
     }
 }
 

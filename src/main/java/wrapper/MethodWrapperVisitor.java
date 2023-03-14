@@ -38,27 +38,5 @@ public class MethodWrapperVisitor extends ClassVisitor {
         }
 
         return methodVisitor;
-
-        //        if (!className.startsWith(mainClassPackage + valueAnon) && !className.contains("init") && desc.startsWith(strand) && !name.startsWith(" $")){
-        //            return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);
-        //        }
-        //        else if (className.startsWith(mainClassPackage + valueAnon)){
-        //            if (desc.startsWith(strand) && !name.startsWith(" $") && !name.startsWith("$anonType") && !name.startsWith("$init")){
-        //                return new MethodWrapperAdapter(access, methodVisitor, name, desc, 1);
-        //            }
-        //        }
-
-        //        if (!className.startsWith(mainClassPackage + valueAnon) && !className.endsWith("$_init.class") && desc.startsWith(strand)){
-        //            return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);  // If the above condition is true, return a new MethodWrapperAdapter
-        //        }
-        //        // check if the className starts with the mainClassPackage + valueAnon
-        //        else if (className.startsWith(mainClassPackage + valueAnon)){
-        //            // check if the desc starts with the strand and the name starts with "$" and doesn't start with "$anonType" and "$init"
-        //            if (desc.startsWith(strand) && name.startsWith("$") && !name.startsWith("$anonType") && !name.startsWith("$init")){
-        //                return new MethodWrapperAdapter(access, methodVisitor, name, desc, 1);  // If the above condition is true, return a new MethodWrapperAdapter
-        //            }
-        //        }
-
-        // If none of the above conditions are true, return the original methodVisitor
     }
 }

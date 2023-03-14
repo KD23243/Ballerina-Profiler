@@ -35,7 +35,7 @@ public class App {
     public static ArrayList<String> utilInitPaths = new ArrayList<>(); // Paths of utility JAR files
     public static ArrayList<String> utilPaths = new ArrayList<>(); // Additional utility JAR files
     public static ArrayList<String> skippedPaths = new ArrayList<>(); // Additional utility JAR files
-    public static Map<String, byte[]> modifiedClassDefs = new HashMap<String, byte[]>();
+    public static Map<String, byte[]> modifiedClassDef = new HashMap<String, byte[]>();
 
     public static void main(String[] args) throws Exception {
         profilerStartTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
@@ -54,7 +54,7 @@ public class App {
         System.out.println("WARNING : Ballerina Profiler is an experimental feature.");
     }
 
-    private static void handleArguments(String[] args) throws FileNotFoundException {
+    private static void handleArguments(String[] args) {
         // Check if there are any arguments passed
         if (!(args.length == 0)) {
             // Loop through each argument
@@ -154,59 +154,45 @@ public class App {
 
             // Iterate through the class names in the "classNames" list
             for (String className : classNames) {
-
                 byte[] code;
                 InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className)); // Get an InputStream for the current class in the Jar file
-
                 try {
                     assert mainClassPackage != null;
                     String pathOrigin = mainClassPackage.split("/")[0];
-
                     boolean baseSatisfied = className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$");
-
                     if (!showAll) {
                         if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
                             String replacedPath = className.replace(".class", "");
                             replacedPath = replacedPath.replace("/", ".");
-
                             skippedPaths.add(replacedPath);
-
                             if (baseSatisfied) {
                                 code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
                                 printCode(className, code); // Print out the modified class code(DEBUG)
-                                modifiedClassDefs.put(className, code);
+                                modifiedClassDef.put(className, code);
                             } else {
                                 code = streamToByte(inputStream); // Otherwise, just get the class code
                             }
-
-
                             classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
                         }
                     } else {
                         if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
-
                             skippedPaths.add("showAll");
-
                             if (baseSatisfied) {
                                 code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
                                 printCode(className, code); // Print out the modified class code(DEBUG)
                             } else {
                                 code = streamToByte(inputStream); // Otherwise, just get the class code
                             }
-
                             classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
                         }
                     }
 
-                } catch (IOException ignored) {
-                }
+                } catch (IOException ignored) {}
             }
-
             PrintWriter pr1 = new PrintWriter("skippedPaths.txt");
             String listString = String.join(", ", skippedPaths);
             pr1.println(listString);
             pr1.close();
-
             System.out.println(" ○ Classes Reached: " + classFiles.size());
         } catch (Exception | Error ignored) {}
         try {
@@ -238,7 +224,7 @@ public class App {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
             pb.start().waitFor();
-            System.out.println("\r" + " ○ Directories Loaded: " + changedDirsSize);
+            System.out.println(" ○ Directories Loaded: " + changedDirsSize);
         } catch (Exception e) {
             System.err.println("Error loading directories: " + e.getMessage());
         }

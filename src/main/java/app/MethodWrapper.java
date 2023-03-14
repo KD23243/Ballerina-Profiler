@@ -16,8 +16,6 @@ public class MethodWrapper extends ClassLoader {
 
     public static void invokeMethods() throws IOException, InterruptedException {
 
-
-
         // If originArgs is not null, create a ProcessBuilder object with arguments, start it, and read the output.
         if (originArgs != null) {
             ProcessBuilder pb3 = new ProcessBuilder("java", "-jar", "temp.jar", originArgs);
@@ -97,14 +95,10 @@ public class MethodWrapper extends ClassLoader {
 
     // Print out the modified class code(DEBUG)
     public static void printCode(String className, byte[] code) {
-
         String pathName = className;
-
         int lastSlashIndex = pathName.lastIndexOf('/');
         String output = pathName.substring(0, lastSlashIndex);
-
         new File(output).mkdirs();
-
         try {
             //Create a FileOutputStream object using the className
             FileOutputStream fos = new FileOutputStream(pathName);

@@ -15,7 +15,6 @@ public class CpuParser {
     public static void initializeCPUParser() throws Exception {
 
         try {
-
             String file = "CpuPre.json"; // File path of the Profiler Output json file
             String jsonInput = readFileAsString(file); // Read the json file as a string
 
