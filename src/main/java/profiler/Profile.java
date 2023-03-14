@@ -3,42 +3,26 @@ package profiler;
 import java.util.concurrent.TimeUnit;
 
 public class Profile {
-
-    private static final String CPU_FORMAT_STRING = "{'\"time\"': '\"%s\"', '\"stackTrace\"': '%s'},"; // constant string format for JSON output
-    private static final String MEM_FORMAT_STRING = "{'\"mem\"': '\"%s\"', '\"stackTrace\"': '%s'},"; // constant string format for JSON output
-    private String name; // name of the profile
-    private String trace; // trace of the profile
-    private long startTime; // start time of the profile
-    private long time; // time duration of the profile
-    private String displayTime; // display time of the profile
-
+    private String name;
+    private long startTime;
+    private long totalTime;
     private long minTime;
     private long maxTime;
-    private long totalTime;
 
-    // constructor
-    public Profile(String name, String trace) {
+    public Profile(String name) {
         this.name = name;
-        this.trace = trace;
+        this.totalTime = 0L;
         this.startTime = 0L;
-        this.time = Long.MAX_VALUE;
-
         this.minTime = Long.MAX_VALUE;
         this.maxTime = Long.MIN_VALUE;
-        this.totalTime = 0L;
     }
 
-    // starts the profile
     public void start() {
         this.startTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
     }
 
-    // stops the profile
     public void stop() {
-//        this.totalTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - this.startTime;
-
         long elapsed = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - this.startTime;
-
         if (elapsed < this.minTime) {
             this.minTime = elapsed;
         }
@@ -50,20 +34,28 @@ public class Profile {
         this.totalTime += elapsed;
     }
 
-    // get formatted stats of the profile
-    private String getFormattedStats(String format) {
+    private String getFormattedStats() {
 
-        if (this.totalTime == Long.MAX_VALUE) {
-            displayTime = "-1";
-        } else {
-            displayTime = String.valueOf(this.totalTime);
+        int time = (int) this.totalTime;
+        String[] stackTrace = new String[] {this.name};
+
+        // create the string representation of the output
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"time\": \"").append(time).append("\", ");
+        sb.append("\"stackTrace\": ");
+        for (int i = 0; i < stackTrace.length; i++) {
+
+            sb.append(stackTrace[i]);
+            if (i < stackTrace.length - 1) {
+                sb.append(", ");
+            }
         }
-//        return String.format(format, this.displayTime, this.trace);
-        return String.format(format, displayTime, this.trace);
+        sb.append("},");
+        return sb.toString();
     }
 
-    // returns the string representation of the cpu profile
-    public String toStringCpu() {
-        return this.getFormattedStats(CPU_FORMAT_STRING);
+    public String toString() {
+        return this.getFormattedStats();
     }
 }

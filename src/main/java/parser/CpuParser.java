@@ -27,37 +27,6 @@ public class CpuParser {
             ObjectMapper mapper = new ObjectMapper(); // Create an ObjectMapper object to map json to Java objects
             List < Item > input = mapper.readValue(jsonInput, new TypeReference < List < Item >> () {}); // Map the json input to a list of Item objects
 
-//            // Create a HashMap to keep track of unique stack traces and their corresponding time values
-//            Map<List<String>, Integer> stackTraceMap = new HashMap<>();
-//            for (Item item : input) {
-//                List<String> stackTrace = item.stackTrace;
-////                if (!stackTrace.get(stackTrace.size() - 1).endsWith("_init.$moduleInit()")) {
-//                    // Only consider stack traces that do not end with "_init.$moduleInit()"
-//                    if (stackTraceMap.containsKey(stackTrace)) {
-//                        // If the stack trace already exists in the map, add its time to the existing value
-//                        int totalTime = stackTraceMap.get(stackTrace) + item.time;
-//                        stackTraceMap.put(stackTrace, totalTime);
-//                    } else {
-//                        // If the stack trace is new, add it to the map with its time as the value
-//                        stackTraceMap.put(stackTrace, item.time);
-//                    }
-////                }
-//            }
-//
-//// Create a new list of items where each item contains a unique stack trace and its corresponding total time
-//            List<Item> output1 = new ArrayList<>();
-//            for (Map.Entry<List<String>, Integer> entry : stackTraceMap.entrySet()) {
-//                List<String> stackTrace = entry.getKey();
-//                int totalTime = entry.getValue();
-//                Item newItem = new Item();
-//                newItem.time = totalTime;
-//                newItem.stackTrace = stackTrace;
-//                output1.add(newItem);
-//            }
-//
-//            input = output1;
-//
-
             // Create a Data object to store the output
             Data output = new Data();
             output.name = "Root";
@@ -101,14 +70,10 @@ public class CpuParser {
             JSONObject jsonObject = new JSONObject(jsonString); // Convert the json string to a JSONObject
 
             int totalTime = getTotalTime(jsonObject); // Calculate the total time
-            int defaultTime = getDefaultTime(jsonObject); // Calculate the default time
-            int leastTime = getLeastTime(jsonObject); // Calculate the least time it takes for a function
 
-            // Check if the default time is less than or equal to 0
-            if (defaultTime <= 0 || defaultTime < leastTime) {
-                jsonObject.remove("value"); // Remove the "value" key
-                jsonObject.put("value", totalTime); // Add the total time as the value
-            }
+            jsonObject.remove("value"); // Remove the "value" key
+            jsonObject.put("value", totalTime); // Add the total time as the value
+
             writer(jsonObject.toString(), "ProfilerOutput.json"); // write the json object to a file
             System.out.println(" ○ ProfilerOutput.json");
 
@@ -130,25 +95,6 @@ public class CpuParser {
             }
         }
         return total; // Return the total time
-    }
-
-    public static int getLeastTime(JSONObject node) {
-        ArrayList < Integer > timeStamps = new ArrayList < > ();
-        JSONArray children = node.optJSONArray("children"); // Get the "children" array from the JSONObject
-        if (children != null) {
-            // Iterate through the children array
-            for (int i = 0; i < children.length(); i++) {
-                // Get the value of the child node and check if the value is not equal to -1
-                if (children.getJSONObject(i).getInt("value") != -1) {
-                    timeStamps.add(children.getJSONObject(i).getInt("value")); // Add the value to the timestamps list
-                }
-            }
-        }
-        return Collections.min(timeStamps); // Return the minimum timestamp
-    }
-
-    public static int getDefaultTime(JSONObject node) {
-        return (int) node.get("value"); // Get the default Timestamp
     }
 
     public static String readFileAsString(String file) throws Exception {

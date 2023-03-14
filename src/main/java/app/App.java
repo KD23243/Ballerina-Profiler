@@ -217,7 +217,6 @@ public class App {
 
         try {
             modifyTheJar(); //Modify the JAR file by overwriting the original files with the instrumented files.
-//            dumpjar1();
         } catch (Exception | Error ignored) {
         }
     }
@@ -372,5 +371,4 @@ public class App {
 }
 
 
-//check module init
-//call init them sleep> normal
+//13 days

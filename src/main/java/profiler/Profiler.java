@@ -1,6 +1,6 @@
 package profiler;
 
-import java.io.BufferedWriter;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,16 +12,16 @@ public class Profiler {
     private static Profiler singletonInstance = null;
     private final HashMap<String, Profile> profiles = new HashMap<>();
     private final ArrayList<Profile> profilesStack = new ArrayList<>();
+
     private ArrayList<String> blockedMethods = new ArrayList<>();
     private List<String> methodNames = new ArrayList<>();
 
     private static List<String> skippedList = new ArrayList<>();
     private static Set<String> skippedClasses = new HashSet<>(skippedList);
 
-    int counter;
-
     protected Profiler() {
         shutDownHookProfiler();
+
         try {
             String content = Files.readString(Paths.get("skippedPaths.txt"));
             List<String> skippedListRead = new ArrayList<String>(Arrays.asList(content.split(", ")));
@@ -30,6 +30,7 @@ public class Profiler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     public static Profiler getInstance() {
@@ -39,66 +40,113 @@ public class Profiler {
         return singletonInstance;
     }
 
-    /* This method starts a new Profile for the current method being executed and adds it to the Profiles map and stack
-    It also adds the current method name to the methodNames set and removes duplicates from the blockedMethods list */
-    public void start(int id) {
-
-        // check if the current method + id combination is not already blocked
-        if (!blockedMethods.contains(getMethodName() + id)) {
-            Profile p = new Profile(getMethodName() + id, getStackTrace()); // create a new Profile for the current method and add it to the Profiles map and stack
-            this.profiles.put(getMethodName() + id, p);
-            this.profilesStack.add(p);
-            p.start();
-            methodNames.add(getMethodName()); // add the current method name to the methodNames set
-            removeDuplicates(blockedMethods); //remove duplicates from blockedMethods list
-        }
-        blockedMethods.remove(getMethodName() + id); // remove the current method + id combination from the blockedMethods list
-    }
-
-    /* This method stops the Profile for the current method being executed and increments the counter if the strand state is "RUNNABLE"
-    If the strand state is not "RUNNABLE", it adds the current method + id combination to the blockedMethods list */
-    public void stop(String strandState, int id) {
-        Profile p = this.profiles.get(getMethodName() + id); // retrieve the profile for the current method + id combination
-        if (strandState.equals("RUNNABLE")) {
-            if (p == null) {
-                // if profile is not found, throw an exception
-                throw new RuntimeException("The profile " + getMethodName() + " has not been created by a call to the start() method!");
-            } else {
-                p.stop(); // stop the profile and increment the counter
-                counter++;
-            }
-        } else {
-            blockedMethods.add(getMethodName() + id); // add the current method + id combination to the blockedMethods list
-        }
-    }
-
-    public String toStringCpu() {
-        StringBuffer stringBuffer = new StringBuffer();
-        for (int i = 0; i < this.profilesStack.size(); i++) {
-            stringBuffer.append(this.profilesStack.get(i).toStringCpu() + "\n");
-        }
-
-        return stringBuffer.toString();
-    }
-
-    public void printProfilerOutput(String dataStream, String fileName) {
-        dataStream = dataStream.replace("'", "");
-        dataStream = "[" + dataStream + "]"; // Add square brackets at the start and end of the string, and removes all single quotes within the string
-
-        // Create a BufferedWriter object and write the modified dataStream to a file with the name "Output.json"
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(fileName + ".json"))) {
-            out.write(dataStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e); // If there are any IOExceptions or other exceptions, it will be caught and handled
-        }
-    }
-
-    /* This method returns the method name of the calling method in the form of a String
-    It uses the StackWalker class to get a list of stack frames representing the current call stack
-    It then returns the method name of the 3rd stack frame (2nd index) in the form of a String "methodName()" */
     public String getMethodName() {
         final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
         return stack.get(2).getMethodName() + "()";
+    }
+
+    public List<String> removeDuplicates(List<String> list) {
+        return list.stream().distinct().collect(Collectors.toList());
+    }
+
+    public void start(int id) {
+        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
+        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
+        name = getStackTrace();
+        if (!blockedMethods.contains(getMethodName() + id)) {
+            Profile p = (Profile) this.profiles.get(name);
+            if (p == null) {
+                p = new Profile(name);
+                this.profiles.put(name, p);
+                this.profilesStack.add(p);
+            }
+            p.start();
+            methodNames.add(getMethodName()); // add the current method name to the methodNames set
+            removeDuplicates(blockedMethods); //
+        }
+        blockedMethods.remove(getMethodName() + id);
+    }
+
+
+    public void start() {
+        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
+        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
+        name = getStackTrace();
+        Profile p = (Profile) this.profiles.get(name);
+        if (p == null) {
+            p = new Profile(name);
+            this.profiles.put(name, p);
+            this.profilesStack.add(p);
+        }
+        p.start();
+        methodNames.add(getMethodName()); // add the current method name to the methodNames set
+        removeDuplicates(blockedMethods); //
+    }
+
+
+    public void stop(String strandState, int id) {
+        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
+        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
+        name = getStackTrace();
+        Profile p = (Profile) this.profiles.get(name);
+        if (strandState.equals("RUNNABLE")) {
+            if (p == null) {
+                throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
+            } else {
+                p.stop();
+            }
+        } else {
+            blockedMethods.add(getMethodName() + id);
+        }
+    }
+
+    public void stop() {
+        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
+        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
+        name = getStackTrace();
+        Profile p = (Profile) this.profiles.get(name);
+        if (p == null) {
+            throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
+        } else {
+            p.stop();
+        }
+    }
+
+
+    public String toString() {
+
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("[");
+        for (int i = 0; i < this.profilesStack.size(); i++) {
+            sb.append(this.profilesStack.get(i) + "\n");
+        }
+        sb.append("]");
+
+        return sb.toString();
+
+    }
+
+    public void printProfilerOutput(String dataStream) {
+        try {
+            FileWriter myWriter = new FileWriter("CpuPre.json");
+//            FileWriter myWriter = new FileWriter("Profile.txt");
+
+            myWriter.write(dataStream);
+            myWriter.close();
+        } catch (IOException var3) {
+            System.out.println("An error occurred.");
+            var3.printStackTrace();
+        }
+    }
+
+
+    public static void shutDownHookProfiler() {
+        // add a shutdown hook to stop the profiler and parse the output when the program is closed
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Profiler profiler = Profiler.getInstance();
+            profiler.printProfilerOutput(profiler.toString());
+        }));
     }
 
     // This method returns a string representation of the current call stack in the form of a list of strings
@@ -136,39 +184,6 @@ public class Profiler {
         return result.toString();
 
     }
-
-    //Remove the duplicates from the arraylist
-    public List<String> removeDuplicates(List<String> list) {
-        return list.stream().distinct().collect(Collectors.toList());
-    }
-
-    //This method starts the profile for the current method
-    public void start() {
-        Profile p = new Profile(getMethodName(), getStackTrace());
-        this.profiles.put(getMethodName(), p);
-        this.profilesStack.add(p);
-        p.start();
-    }
-
-    //This method stops the profile for the current method
-    public void stop() {
-        Profile p = this.profiles.get(getMethodName());
-        if (p == null) {
-            throw new RuntimeException("The profile " + getMethodName() + " has not been created by a call to the start() method!");
-        } else {
-            p.stop();
-        }
-    }
-
-    public static void shutDownHookProfiler() {
-        // add a shutdown hook to stop the profiler and parse the output when the program is closed
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Profiler profiler = Profiler.getInstance();
-            profiler.printProfilerOutput(profiler.toStringCpu(), "CpuPre");
-        }));
-    }
 }
 
 
-//remove to string with getmethodname
-//fix the time.Call billion times and should show that time.
