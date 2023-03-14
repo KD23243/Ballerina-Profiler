@@ -45,8 +45,6 @@ public class App {
         extractTheProfiler(); // Extract the profiler used by the program
         createTheTempJar(jarPathJava); // Create a temporary JAR file at the given location
         initialize(jarPathJava); // Initialize profiling
-
-
     }
 
     private static void printHeader() {
@@ -167,7 +165,6 @@ public class App {
 
                     boolean baseSatisfied = className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$");
 
-
                     if (!showAll) {
                         if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
                             String replacedPath = className.replace(".class", "");
@@ -212,17 +209,13 @@ public class App {
             pr1.close();
 
             System.out.println(" ○ Classes Reached: " + classFiles.size());
-        } catch (Exception | Error ignored) {
-        }
-
+        } catch (Exception | Error ignored) {}
         try {
             modifyTheJar(); //Modify the JAR file by overwriting the original files with the instrumented files.
-        } catch (Exception | Error ignored) {
-        }
+        } catch (Exception | Error ignored) {}
     }
 
     private static void modifyTheJar() throws InterruptedException, IOException {
-
         try {
             final File userDir = new File(System.getProperty("user.dir")); // Get the user directory
             listAllFiles(userDir); // List all files in the user directory and its subdirectories
@@ -234,21 +227,35 @@ public class App {
         }
     }
 
-    private static void loadDirectories(List<String> changedDirs) throws IOException, InterruptedException {
+    private static void loadDirectories(List<String> changedDirs) {
 
         int changedDirsSize = changedDirs.size() - 1;
-        for (int i = 0; i < changedDirs.size() + 1; i++) {
-            try {
-                ProcessBuilder pb = new ProcessBuilder("jar", "uf", "temp.jar");
-                pb.redirectErrorStream(true);
-                pb.command("jar", "uf", "temp.jar", changedDirs.get(i)).start().waitFor();
-                System.out.print("\r" + " ○ Directories Loaded: " + i + "/" + changedDirsSize);
-            }catch (Exception e){
 
-            }
+        try {
+            List<String> command = new ArrayList<String>();
+            command.add("jar");
+            command.add("uf");
+            command.add("temp.jar");
+            command.addAll(changedDirs);
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.redirectErrorStream(true);
+            pb.start().waitFor();
+            System.out.println("\r" + " ○ Directories Loaded: " + changedDirsSize);
+        } catch (Exception e) {
+            System.err.println("Error loading directories: " + e.getMessage());
         }
-        System.out.println();
 
+
+//        int changedDirsSize = changedDirs.size() - 1;
+//        for (int i = 0; i < changedDirs.size() + 1; i++) {
+//            try {
+//                ProcessBuilder pb = new ProcessBuilder("jar", "uf", "temp.jar");
+//                pb.redirectErrorStream(true);
+//                pb.command("jar", "uf", "temp.jar", changedDirs.get(i)).start().waitFor();
+//                System.out.print("\r" + " ○ Directories Loaded: " + i + "/" + changedDirsSize);
+//            }catch (Exception e){}
+//        }
     }
 
     public static void listAllFiles(final File userDirectory) {
@@ -259,7 +266,6 @@ public class App {
 
         // Iterate through all files and directories in the userDirectory
         for (final File fileEntry : userDirectory.listFiles()) {
-
 
             // If the fileEntry is a directory, recursively call this method to check for any nested files
             if (fileEntry.isDirectory()) {
@@ -338,22 +344,20 @@ public class App {
                 }
                 // Delete the profiler and temporary jar directories.
                 FileUtils.deleteDirectory(new File("profiler"));
-//                FileUtils.delete(new File("temp.jar"));
+                FileUtils.delete(new File("temp.jar"));
                 System.out.println("\n" + ANSI_ORANGE + "[6/6] Generating Output..." + ANSI_RESET);
                 Thread.sleep(1000);
                 initializeCPUParser(); // Initialize the CPU parser.
                 // Delete the skipped paths text file and CPU pre JSON file.
                 FileUtils.delete(new File("skippedPaths.txt"));
-//                FileUtils.delete(new File("CpuPre.json"));
+                FileUtils.delete(new File("CpuPre.json"));
                 // Print the produced artifacts.
                 System.out.println("--------------------------------------------------------------------------------");
                 System.out.println(ANSI_YELLOW + "Produced Artifacts" + ANSI_RESET);
                 deleteTmpData();
-            } catch (Exception ignore) {
-            }
+            } catch (Exception ignore) {}
         }));
     }
-
 
     private static void deleteTmpData() {
         String directoryPath = System.getProperty("user.dir");
