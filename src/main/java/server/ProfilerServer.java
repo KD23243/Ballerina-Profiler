@@ -7,18 +7,15 @@ import java.net.Socket;
 import static server.ServerFrontEnd.getSiteData;
 
 public class ProfilerServer {
-    static boolean sad = true;
 
     public static void initServer() throws IOException {
+        int port = 2324;
 
         String content = readData();
+        ServerSocket serverSocket = new ServerSocket(port);
+        System.out.println(" ○ Output: " + "http://localhost:" + port); // Print the number of instrumented files
 
-
-        ServerSocket serverSocket = new ServerSocket(2324);
-
-        System.out.println("Server running on port 2324...");
-
-        while (sad) {
+        while (true) {
             // accept incoming client connections
             Socket clientSocket = serverSocket.accept();
 
@@ -52,6 +49,7 @@ public class ProfilerServer {
             clientSocket.close();
 
         }
+
     }
 
     private static String readData() throws IOException {

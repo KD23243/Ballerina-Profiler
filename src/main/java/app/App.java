@@ -23,7 +23,6 @@ public class App {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_GRAY = "\033[37m";
     public static final String ANSI_ORANGE = "\033[1;38;2;255;165;0m";
-    public static final String ANSI_YELLOW = "\033[1;93m";
 
     // Define public static variables for the program
     public static long profilerStartTime = 0;
@@ -327,14 +326,10 @@ public class App {
                 FileUtils.delete(new File("skippedPaths.txt"));
                 FileUtils.delete(new File("CpuPre.json"));
                 System.out.println(" ○ Execution Time: " + profilerTotalTime/1000 + " Seconds");
-                System.out.println(" ○ Output: performance_report.json"); // Print the number of instrumented files
-                System.out.println("--------------------------------------------------------------------------------");
                 deleteTmpData();
-                try {
-                    initServer();
-                }catch (Exception e){
-                    System.out.println(e);
-                }
+                initServer();
+                FileUtils.delete(new File("performance_report.json"));
+                System.out.println("--------------------------------------------------------------------------------");
 
             } catch (Exception ignore) {}
         }));
