@@ -1,6 +1,7 @@
 package app;
 
 import org.apache.commons.io.FileUtils;
+import server.ProfilerServer;
 
 import java.io.*;
 import java.net.URL;
@@ -15,6 +16,7 @@ import java.util.zip.ZipInputStream;
 
 import static app.MethodWrapper.*;
 import static parser.CpuParser.initializeCPUParser;
+import static server.ProfilerServer.initServer;
 
 public class App {
     // Define ANSI escape codes for colored console output
@@ -328,6 +330,12 @@ public class App {
                 System.out.println(" ○ Output: performance_report.json"); // Print the number of instrumented files
                 System.out.println("--------------------------------------------------------------------------------");
                 deleteTmpData();
+                try {
+                    initServer();
+                }catch (Exception e){
+                    System.out.println(e);
+                }
+
             } catch (Exception ignore) {}
         }));
     }
