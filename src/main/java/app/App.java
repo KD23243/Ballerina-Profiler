@@ -1,7 +1,6 @@
 package app;
 
 import org.apache.commons.io.FileUtils;
-import server.ProfilerServer;
 
 import java.io.*;
 import java.net.URL;
@@ -198,6 +197,7 @@ public class App {
         } catch (Exception | Error ignored) {}
         try {
             modifyTheJar(); //Modify the JAR file by overwriting the original files with the instrumented files.
+
         } catch (Exception | Error ignored) {}
     }
 
@@ -209,6 +209,11 @@ public class App {
             System.out.println(" ○ Classes Modified: " + instrumentedFiles.size()); // Print the number of instrumented files
             loadDirectories(changedDirs);
         }finally {
+            for (String instrumentedPath : instrumentedPaths) {
+                FileUtils.deleteDirectory(new File(instrumentedPath));
+            }
+            // Delete the profiler and temporary jar directories.
+            FileUtils.deleteDirectory(new File("profiler"));
             invokeMethods();
         }
     }
@@ -313,11 +318,7 @@ public class App {
             // Delete the instrumented directories.
             try {
                 long profilerTotalTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - profilerStartTime;
-                for (String instrumentedPath : instrumentedPaths) {
-                    FileUtils.deleteDirectory(new File(instrumentedPath));
-                }
-                // Delete the profiler and temporary jar directories.
-                FileUtils.deleteDirectory(new File("profiler"));
+
                 FileUtils.delete(new File("temp.jar"));
                 System.out.println("\n" + ANSI_ORANGE + "[6/6] Generating Output..." + ANSI_RESET);
                 Thread.sleep(1000);

@@ -8,12 +8,17 @@ import static server.ServerFrontEnd.getSiteData;
 
 public class ProfilerServer {
 
+    public static final String ANSI_YELLOW = "\033[1;38;2;255;255;0m";
+    public static final String ANSI_RESET = "\u001B[0m";
+
     public static void initServer() throws IOException {
         int port = 2324;
 
         String content = readData();
         ServerSocket serverSocket = new ServerSocket(port);
-        System.out.println(" ○ Output: " + "http://localhost:" + port); // Print the number of instrumented files
+        System.out.println(" ○ Output: " + ANSI_YELLOW + "http://localhost:" + port + ANSI_RESET);
+        System.out.println();
+//        System.out.println("\n" + ANSI_ORANGE + "[6/6] Generating Output..." + ANSI_RESET);
 
         while (true) {
             // accept incoming client connections
