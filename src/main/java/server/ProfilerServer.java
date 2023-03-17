@@ -17,7 +17,6 @@ public class ProfilerServer {
         String content = readData();
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println(" ○ Output: " + ANSI_YELLOW + "http://localhost:" + port + ANSI_RESET);
-        System.out.println();
 //        System.out.println("\n" + ANSI_ORANGE + "[6/6] Generating Output..." + ANSI_RESET);
 
         while (true) {
@@ -33,7 +32,7 @@ public class ProfilerServer {
             // read the HTTP request header
             String request = in.readLine();
 
-            if (request.contains("/off")) {
+            if (request.contains("/terminate")) {
                 break;
             } else {
 
