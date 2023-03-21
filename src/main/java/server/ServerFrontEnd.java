@@ -14,8 +14,6 @@ public class ServerFrontEnd {
                 "   <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">\n" +
                 "   <link rel=\"stylesheet\" type=\"text/css\"\n" +
                 "      href=\"https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.css\">\n" +
-                "   <!-- <link rel=\"stylesheet\" type=\"text/css\" href=\"flamegraph.css\"> -->\n" +
-
                 "\n" +
                 "<style>\n" +
                 "      body {\n" +
@@ -90,6 +88,30 @@ public class ServerFrontEnd {
                 "         fill: yellow !important;\n" +
                 "      }\n" +
                 "\n" +
+
+
+
+                ".balLogo {\n" +
+                "         padding-left: 20px !important;\n" +
+                "         padding-top: 25px !important;\n" +
+                "         width: 200px !important;\n" +
+                "         height: 50px !important;\n" +
+                "      }\n" +
+                "\n" +
+
+
+
+                ".form-control{\n" +
+                "         border-radius: 0px !important;\n" +
+                "         box-sizing:border-box !important;\n" +
+                "         font-size:17px !important;\n" +
+                "         height:2em !important;\n" +
+                "         padding:.5em !important;\n" +
+                "         transition:all 2s ease-in !important;\n" +
+                "         width:300px !important;\n" +
+                "         z-index:1 !important;\n" +
+                "      }\n" +
+                "\n" +
                 "   </style>" +
                 "   <title>b7a-flamegraph</title>\n" +
                 "</head>\n" +
@@ -111,7 +133,7 @@ public class ServerFrontEnd {
                 "               </form>\n" +
                 "            </div>\n" +
                 "         </nav>\n" +
-                "         <h3 class=\"text-muted\">b7a-profiler</h3>\n" +
+                "         <img class=\"balLogo\" src=\"https://ballerina.io/images/ballerina-logo-white.svg\" alt=\"B7A\"/>\n" +
                 "      </div>\n" +
                 "      <div id=\"chart\"></div>\n" +
                 "      <hr>\n" +
@@ -168,7 +190,7 @@ public class ServerFrontEnd {
                 "      // Define a clear function to clear the search bar and reset the flame graph\n" +
                 "      function stop() {\n" +
 
-                "const answer = window.confirm(\"Leaving this page will end the profiling process.\");\n" +
+                "const answer = window.confirm(\"Leaving this page will end the profiling process\");\n" +
                 "\n" +
                 "  // return the user's answer\n" +
                 "  if (answer) {\n" +

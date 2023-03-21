@@ -26,7 +26,6 @@ public class App {
     // Define public static variables for the program
     public static long profilerStartTime = 0;
     public static int exitCode = 0; // Exit code for the program
-    public static boolean showAll = false; // Whether to show all output or not
     public static String originArgs = null; // Original command line arguments for the JAR
     public static String jarPathJava = null; // Path to JAR file
 
@@ -37,7 +36,7 @@ public class App {
     public static ArrayList<String> skippedPaths = new ArrayList<>(); // Additional utility JAR files
     public static Map<String, byte[]> modifiedClassDef = new HashMap<String, byte[]>();
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         profilerStartTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
         shutDownHookApp(); // Register a shutdown hook to handle graceful shutdown of the application
         printHeader(); // Print the program header
@@ -61,16 +60,12 @@ public class App {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
                     // Set the path to the JAR file
-                    case "--filename":
+                    case "--file":
                         jarPathJava = args[i + 1];
                         break;
                     // Set the original command line arguments
-                    case "--arguments":
+                    case "--args":
                         originArgs = args[i + 1];
-                        break;
-                    // Set the program to only show minimum output
-                    case "--all":
-                        showAll = true;
                         break;
                 }
             }
@@ -160,33 +155,19 @@ public class App {
                     assert mainClassPackage != null;
                     String pathOrigin = mainClassPackage.split("/")[0];
                     boolean baseSatisfied = className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$");
-                    if (!showAll) {
-                        if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
-                            String replacedPath = className.replace(".class", "");
-                            replacedPath = replacedPath.replace("/", ".");
-                            skippedPaths.add(replacedPath);
-                            if (baseSatisfied) {
-                                code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
-                                printCode(className, code); // Print out the modified class code(DEBUG)
-                                modifiedClassDef.put(className, code);
-                            } else {
-                                code = streamToByte(inputStream); // Otherwise, just get the class code
-                            }
-                            classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
+                    if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
+                        String replacedPath = className.replace(".class", "");
+                        replacedPath = replacedPath.replace("/", ".");
+                        skippedPaths.add(replacedPath);
+                        if (baseSatisfied) {
+                            code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
+                            printCode(className, code); // Print out the modified class code(DEBUG)
+                            modifiedClassDef.put(className, code);
+                        } else {
+                            code = streamToByte(inputStream); // Otherwise, just get the class code
                         }
-                    } else {
-                        if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
-                            skippedPaths.add("showAll");
-                            if (baseSatisfied) {
-                                code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
-                                printCode(className, code); // Print out the modified class code(DEBUG)
-                            } else {
-                                code = streamToByte(inputStream); // Otherwise, just get the class code
-                            }
-                            classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
-                        }
+                        classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
                     }
-
                 } catch (IOException ignored) {}
             }
             PrintWriter pr1 = new PrintWriter("skippedPaths.txt");
@@ -329,7 +310,7 @@ public class App {
                 System.out.println(" ○ Execution Time: " + profilerTotalTime/1000 + " Seconds");
                 deleteTmpData();
                 initServer();
-                FileUtils.delete(new File("performance_report.json"));
+//                FileUtils.delete(new File("performance_report.json"));
                 System.out.println("--------------------------------------------------------------------------------");
 
             } catch (Exception ignore) {}
@@ -353,5 +334,3 @@ public class App {
 
 
 //12 days
-//add button to save as intractable svg
-//write a testcase bal 1000 calls with sleep
