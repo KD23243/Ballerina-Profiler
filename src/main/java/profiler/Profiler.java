@@ -17,6 +17,8 @@ public class Profiler {
     private static List<String> skippedList = new ArrayList<>();
     private static Set<String> skippedClasses = new HashSet<>(skippedList);
 
+    private static final String GENERATED_METHOD_PREFIX = "$gen$";
+
     protected Profiler() {
         shutDownHookProfiler();
         try {
@@ -25,7 +27,7 @@ public class Profiler {
             skippedList.addAll(skippedListRead);
             skippedClasses.addAll(skippedList);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
         }
     }
 
@@ -152,7 +154,9 @@ public class Profiler {
             if (skippedClasses.contains(frame.getClassName())) {
                 String frameString = frame.toString();
                 frameString = "\"" + frameString.replaceAll("\\(.*\\)", "") + "()" + "\"";
-                filteredFrames.add(frameString);
+
+
+                filteredFrames.add(decodeIdentifier(frameString));
             }
         }
         // Loop over filtered frame strings and add non-generated ones to a result list
@@ -164,6 +168,69 @@ public class Profiler {
         // Convert result list to a string and return it
         return result.toString();
     }
-}
 
+    // This method takes an encoded identifier string as input and returns the decoded version of it
+    public static String decodeIdentifier(String encodedIdentifier) {
+        // If the input string is null, just return null
+        if (encodedIdentifier == null) {
+            return null;
+        }
+        // Create a StringBuilder to hold the decoded identifier
+        StringBuilder sb = new StringBuilder();
+        // Initialize the index to 0
+        int index = 0;
+        // Loop through the characters in the encoded identifier
+        while (index < encodedIdentifier.length()) {
+            // If the current character is a '$' and there are at least 4 characters left in the string
+            if (encodedIdentifier.charAt(index) == '$' && index + 4 < encodedIdentifier.length()) {
+                // Check if the next 4 characters are a Unicode code point
+                if (isUnicodePoint(encodedIdentifier, index)) {
+                    // If they are, append the character corresponding to that code point to the StringBuilder
+                    sb.append((char) Integer.parseInt(encodedIdentifier.substring(index + 1, index + 5)));
+                    // Update the index to skip over the 5 characters that were just decoded
+                    index += 5;
+                } else {
+                    // If the next 4 characters are not a Unicode code point, just append the '$' character
+                    sb.append(encodedIdentifier.charAt(index));
+                    // Update the index to move to the next character
+                    index++;
+                }
+            } else {
+                // If the current character is not a '$' or there are less than 4 characters left in the string,
+                // just append the current character
+                sb.append(encodedIdentifier.charAt(index));
+                // Update the index to move to the next character
+                index++;
+            }
+        }
+        // Once all the characters have been decoded and added to the StringBuilder, call the decodeGeneratedMethodName method
+        // to remove any generated method prefixes from the identifier, and return the result
+        return decodeGeneratedMethodName(sb.toString());
+    }
+
+    // This method checks if the substring of the encoded identifier starting from the given index represents a Unicode code point
+    private static boolean isUnicodePoint(String encodedName, int index) {
+        // Check if the substring contains only digits
+        return (containsOnlyDigits(encodedName.substring(index + 1, index + 5)));
+    }
+
+    // This method takes a decoded method name as input and removes any generated method prefixes from it
+    private static String decodeGeneratedMethodName(String decodedName) {
+        return decodedName.startsWith(GENERATED_METHOD_PREFIX) ?
+                decodedName.substring(GENERATED_METHOD_PREFIX.length()) : decodedName;
+    }
+
+    // This method checks if the given string contains only digits
+    private static boolean containsOnlyDigits(String digitString) {
+        // Loop through each character in the string and check if it is a digit
+        for (int i = 0; i < digitString.length(); i++) {
+            if (!Character.isDigit(digitString.charAt(i))) {
+                // If any character is not a digit, return false
+                return false;
+            }
+        }
+        // If all characters are digits, return true
+        return true;
+    }
+}
 

@@ -148,9 +148,7 @@ public class ServerFrontEnd {
                 contents +
                 "\n" +
                 "\n" +
-                "var customColors = ['#d2f0ef', '#79d3d0', '#20b6b0'];\n" +
-                "      var colorScale = d3.scaleOrdinal().range(customColors);\n" +
-                "      var flameGraph = d3.flamegraph().width(1840).cellHeight(18).transitionDuration(750).minFrameSize(5).transitionEase(d3.easeCubic).sort(false).color(colorScale).onClick(onClick).differential(false);\n" +
+                "      var flameGraph = d3.flamegraph().width(1840).cellHeight(18).transitionDuration(750).minFrameSize(5).transitionEase(d3.easeCubic).sort(false).onClick(onClick).differential(false);\n" +
                 "\n" +
                 "      var details = document.getElementById(\"details\");\n" +
                 "      flameGraph.setDetailsElement(details);\n" +
@@ -162,7 +160,6 @@ public class ServerFrontEnd {
                 "         .datum(start)\n" +
                 "         .call(flameGraph);\n" +
                 "\n" +
-
                 "function search() {\n" +
                 "         var term = document.getElementById(\"searchBox\").value.toLowerCase();\n" +
                 "         if (term) {\n" +
@@ -256,6 +253,19 @@ public class ServerFrontEnd {
                 "      }\n" +
                 "\n" +
                 "   </script>\n" +
+
+                "   <script>\n" +
+                "      const myDiv = document.getElementById('details');\n" +
+                "\n" +
+                "      new MutationObserver(() => {\n" +
+                "         const currentText = myDiv.textContent;\n" +
+                "         if (currentText.includes('samples')) {\n" +
+                "            const newText = currentText.replace('samples', 'ms');\n" +
+                "            myDiv.textContent = newText;\n" +
+                "         }\n" +
+                "      }).observe(myDiv, { childList: true });\n" +
+                "   </script>\n" +
+
                 "</body>\n" +
                 "\n" +
                 "</html>";

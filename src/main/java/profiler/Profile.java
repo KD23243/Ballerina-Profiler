@@ -45,7 +45,6 @@ public class Profile {
         sb.append("\"time\": \"").append(time).append("\", ");
         sb.append("\"stackTrace\": ");
         for (int i = 0; i < stackTrace.length; i++) {
-
             sb.append(stackTrace[i]);
             if (i < stackTrace.length - 1) {
                 sb.append(", ");
