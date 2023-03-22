@@ -85,7 +85,7 @@ public class ServerFrontEnd {
                 "      }\n" +
                 "\n" +
                 "      .highlight {\n" +
-                "         fill: yellow !important;\n" +
+                "         fill: greenyellow !important;\n" +
                 "      }\n" +
                 "\n" +
 
