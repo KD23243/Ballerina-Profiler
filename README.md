@@ -4,7 +4,7 @@ Ballerina Profiler is a Java application designed to provide execution time anal
 
 
 ## **Installation**
-To install the Profiler App, simply download the latest release from the GitHub repository and extract the contents to a directory of your choice. The app is a Java Archive (JAR) file and can be run on any operating system with Java installed.
+To install the Ballerina Profiler, simply download the latest release from the GitHub repository and extract the Profiler.jar to the directory where the ballerina jar is located.
 
 
 ## **CLI Usage**
