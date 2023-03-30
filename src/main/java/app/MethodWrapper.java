@@ -35,6 +35,7 @@ public class MethodWrapper extends ClassLoader {
             ProcessBuilder pb6 = new ProcessBuilder("java", "-jar", "temp.jar");
             pb6.redirectErrorStream(true);
             Process p1 = pb6.start();
+//            p1.waitFor();
             System.out.println(ANSI_ORANGE + "[5/6] Running Executable..." + ANSI_RESET);
             BufferedReader br = new BufferedReader(new InputStreamReader(p1.getInputStream()));
             String line;
@@ -93,7 +94,7 @@ public class MethodWrapper extends ClassLoader {
         return null; //Return null if the code was not modified
     }
 
-    // Print out the modified class code(DEBUG)
+    // Print out the modified class code
     public static void printCode(String className, byte[] code) {
         String pathName = className;
         int lastSlashIndex = pathName.lastIndexOf('/');

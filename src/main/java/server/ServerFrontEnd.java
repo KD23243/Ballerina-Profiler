@@ -50,11 +50,6 @@ public class ServerFrontEnd {
                 "         background-color: #494949;\n" +
                 "      }\n" +
                 "\n" +
-                "      .partition {\n" +
-                "         margin-top: 40px;\n" +
-                "         background-color: #F8F8F8;\n" +
-                "      }\n" +
-                "\n" +
                 "      .header {\n" +
                 "         margin-left: -40px;\n" +
                 "         padding-right: 40px;\n" +
@@ -90,6 +85,9 @@ public class ServerFrontEnd {
                 "\n" +
 
 
+                ".d3-flame-graph-tip {\n" +
+                "         visibility: hidden !important;\n" +
+                "      }" +
 
                 ".balLogo {\n" +
                 "         padding-left: 20px !important;\n" +
@@ -98,6 +96,13 @@ public class ServerFrontEnd {
                 "         height: 50px !important;\n" +
                 "      }\n" +
                 "\n" +
+
+                "#chart {\n" +
+                "         max-height: 780px;\n" +
+                "         width: 1840px;\n" +
+                "         overflow-y: auto;\n" +
+                "         background-color: #F8F8F8;\n" +
+                "      }" +
 
 
 
@@ -148,7 +153,7 @@ public class ServerFrontEnd {
                 contents +
                 "\n" +
                 "\n" +
-                "      var flameGraph = d3.flamegraph().width(1840).cellHeight(18).transitionDuration(750).minFrameSize(5).transitionEase(d3.easeCubic).sort(false).onClick(onClick).differential(false);\n" +
+                "      var flameGraph = d3.flamegraph().width(1840).selfValue(false).cellHeight(18).transitionDuration(750).minFrameSize(5).transitionEase(d3.easeCubic).sort(false).onClick(onClick).differential(false);\n" +
                 "\n" +
                 "      var details = document.getElementById(\"details\");\n" +
                 "      flameGraph.setDetailsElement(details);\n" +

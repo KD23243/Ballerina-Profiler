@@ -28,15 +28,31 @@ public class MethodWrapperVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         // get a MethodVisitor for the visited method
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
+        String classNameWithoutPackage = className.substring(className.lastIndexOf("/") + 1);
 
+        if (classNameWithoutPackage.startsWith("$") || className.endsWith("Frame.class")) {
+            return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
+        }
         if (desc.startsWith(strand) && !className.contains("$_init") && !name.startsWith("$init")) {
-            if (!className.startsWith(mainClassPackage + valueAnon) && !className.contains("init")) {
-                return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);
-            } else if (className.startsWith(mainClassPackage + valueAnon) && !name.startsWith("$anonType")) {
+            if (className.startsWith(mainClassPackage + valueAnon) && !name.startsWith("$anonType")) {
                 return new MethodWrapperAdapter(access, methodVisitor, name, desc, 1);
+            } else if (!className.contains("init") && !className.startsWith(mainClassPackage + valueAnon)) {
+                return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);
             }
         }
 
-        return methodVisitor;
+        return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
     }
 }
+
+
+//getAnonType66
+//<init>
+
+//add function to list all the unwanted stuff
+
+//remove from the stacktrace
+
+//object class for testing simple
+
+//break loop if found

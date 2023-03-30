@@ -28,12 +28,13 @@ public class App {
     public static int exitCode = 0; // Exit code for the program
     public static String originArgs = null; // Original command line arguments for the JAR
     public static String jarPathJava = null; // Path to JAR file
+    public static String skipString = "kd"; // Path to JAR file
 
     public static ArrayList<String> instrumentedPaths = new ArrayList<>(); // Paths of instrumented JAR files
     public static ArrayList<String> instrumentedFiles = new ArrayList<>(); // Names of instrumented JAR files
     public static ArrayList<String> utilInitPaths = new ArrayList<>(); // Paths of utility JAR files
     public static ArrayList<String> utilPaths = new ArrayList<>(); // Additional utility JAR files
-    public static ArrayList<String> skippedPaths = new ArrayList<>(); // Additional utility JAR files
+    public static ArrayList<String> usedPaths = new ArrayList<>(); // Additional utility JAR files
     public static Map<String, byte[]> modifiedClassDef = new HashMap<String, byte[]>();
 
     public static void main(String[] args) {
@@ -66,6 +67,9 @@ public class App {
                     // Set the original command line arguments
                     case "--args":
                         originArgs = args[i + 1];
+                        break;
+                    case "--skip":
+                        skipString = args[i + 1];
                         break;
                 }
             }
@@ -154,24 +158,29 @@ public class App {
                 try {
                     assert mainClassPackage != null;
                     String pathOrigin = mainClassPackage.split("/")[0];
-                    boolean baseSatisfied = className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("Frame.class") && !className.substring(className.lastIndexOf("/") + 1).startsWith("$");
+
+                    boolean baseSatisfied = className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("asd");
+
+                    //fix this
                     if (className.startsWith(pathOrigin) || utilPaths.contains(className)) {
                         String replacedPath = className.replace(".class", "");
                         replacedPath = replacedPath.replace("/", ".");
-                        skippedPaths.add(replacedPath);
+                        usedPaths.add(replacedPath);
                         if (baseSatisfied) {
                             code = modifyMethods(inputStream, mainClassPackage, className); // Modify the methods in the current class
-                            printCode(className, code); // Print out the modified class code(DEBUG)
+                            printCode(className, code); // Print out the modified class code
                             modifiedClassDef.put(className, code);
                         } else {
                             code = streamToByte(inputStream); // Otherwise, just get the class code
                         }
                         classFiles.add(customClassLoader.loadClass(code)); // Load the class using the custom class loader and add it to the classFiles list
                     }
-                } catch (IOException ignored) {}
+                } catch (IOException ignored) {
+                    System.out.println(ignored);
+                }
             }
-            PrintWriter pr1 = new PrintWriter("skippedPaths.txt");
-            String listString = String.join(", ", skippedPaths);
+            PrintWriter pr1 = new PrintWriter("usedPaths.txt");
+            String listString = String.join(", ", usedPaths);
             pr1.println(listString);
             pr1.close();
             System.out.println(" ○ Classes Reached: " + classFiles.size());
@@ -303,9 +312,9 @@ public class App {
                 FileUtils.delete(new File("temp.jar"));
                 System.out.println("\n" + ANSI_ORANGE + "[6/6] Generating Output..." + ANSI_RESET);
                 Thread.sleep(1000);
-                initializeCPUParser(); // Initialize the CPU parser.
-                // Delete the skipped paths text file and CPU pre JSON file.
-                FileUtils.delete(new File("skippedPaths.txt"));
+                initializeCPUParser(skipString); // Initialize the CPU parser.
+                // Delete the used paths text file and CPU pre JSON file.
+                FileUtils.delete(new File("usedPaths.txt"));
                 FileUtils.delete(new File("CpuPre.json"));
                 System.out.println(" ○ Execution Time: " + profilerTotalTime/1000 + " Seconds");
                 deleteTmpData();

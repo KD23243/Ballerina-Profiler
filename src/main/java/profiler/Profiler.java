@@ -22,7 +22,7 @@ public class Profiler {
     protected Profiler() {
         shutDownHookProfiler();
         try {
-            String content = Files.readString(Paths.get("skippedPaths.txt"));
+            String content = Files.readString(Paths.get("usedPaths.txt"));
             List<String> skippedListRead = new ArrayList<String>(Arrays.asList(content.split(", ")));
             skippedList.addAll(skippedListRead);
             skippedClasses.addAll(skippedList);
@@ -48,9 +48,7 @@ public class Profiler {
     }
 
     public void start(int id) {
-        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
-        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
-        name = getStackTrace();
+        String name = getStackTrace();
         if (!blockedMethods.contains(getMethodName() + id)) {
             Profile p = (Profile) this.profiles.get(name);
             if (p == null) {
@@ -67,9 +65,7 @@ public class Profiler {
 
 
     public void start() {
-        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
-        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
-        name = getStackTrace();
+        String name = getStackTrace();
         Profile p = (Profile) this.profiles.get(name);
         if (p == null) {
             p = new Profile(name);
@@ -83,13 +79,11 @@ public class Profiler {
 
 
     public void stop(String strandState, int id) {
-        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
-        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
-        name = getStackTrace();
+        String name = getStackTrace();
         Profile p = (Profile) this.profiles.get(name);
         if (strandState.equals("RUNNABLE")) {
             if (p == null) {
-                throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
+//                throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
             } else {
                 p.stop();
             }
@@ -99,12 +93,10 @@ public class Profiler {
     }
 
     public void stop() {
-        final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
-        String name = stack.get(1).getClassName() + " :" + stack.get(1).getMethodName() + "()";
-        name = getStackTrace();
+        String name = getStackTrace();
         Profile p = (Profile) this.profiles.get(name);
         if (p == null) {
-            throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
+//            throw new RuntimeException("The profile " + name + " has not been created by a call to the start() method!");
         } else {
             p.stop();
         }
@@ -143,26 +135,17 @@ public class Profiler {
     // This method returns a string representation of the current call stack in the form of a list of strings
     public String getStackTrace() {
         ArrayList<String> result = new ArrayList<>();
-        ArrayList<String> filteredFrames = new ArrayList<>();
         //Uses the StackWalker class to get a list of stack frames representing the current call stack
         final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
         stack.subList(0, 2).clear(); //Removes the first 2 stack frames (index 0 and 1) and reverses the order of the remaining stack frames
         Collections.reverse(stack); //Reverse the collection
-        stack.subList(0, 2).clear(); //Removes the top 2 stack frames
+//        stack.subList(0, 2).clear(); //Removes the top 2 stack frames
         // Loop over stack frames and add filtered frames to a list of strings
         for (StackWalker.StackFrame frame : stack) {
             if (skippedClasses.contains(frame.getClassName())) {
                 String frameString = frame.toString();
                 frameString = "\"" + frameString.replaceAll("\\(.*\\)", "") + "()" + "\"";
-
-
-                filteredFrames.add(decodeIdentifier(frameString));
-            }
-        }
-        // Loop over filtered frame strings and add non-generated ones to a result list
-        for (String frameString : filteredFrames) {
-            if (!frameString.contains("$gen")) {
-                result.add(frameString);
+                result.add(decodeIdentifier(frameString));
             }
         }
         // Convert result list to a string and return it

@@ -9,12 +9,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class CpuParser {
-    public static void initializeCPUParser() throws Exception {
+    public static void initializeCPUParser(String skipString) throws Exception {
 
         try {
+            ArrayList<String> skipList = new ArrayList<String>(Arrays.asList(skipString.split(",")));
+
+            skipList.add("$gen");
+            skipList.add("getAnonType");
+
             String file = "CpuPre.json"; // File path of the Profiler Output json file
             String jsonInput = readFileAsString(file); // Read the json file as a string
 
@@ -24,16 +31,17 @@ public class CpuParser {
             jsonInput = jsonInputStringBuffer.toString();
 
             ObjectMapper mapper = new ObjectMapper(); // Create an ObjectMapper object to map json to Java objects
-            List < Item > input = mapper.readValue(jsonInput, new TypeReference < List < Item >> () {}); // Map the json input to a list of Item objects
+            List<Item> input = mapper.readValue(jsonInput, new TypeReference<List<Item>>() {
+            }); // Map the json input to a list of Item objects
 
             // Create a Data object to store the output
             Data output = new Data();
             output.name = "Root";
             output.value = input.get(0).time;
-            output.children = new ArrayList < > ();
+            output.children = new ArrayList<>();
 
             // Iterate through the input list
-            for (Item item: input) {
+            for (Item item : input) {
                 if (item.stackTrace.size() == 1) {
                     output.value = Math.max(output.value, item.time); // Update the value of the root node
                 } else {
@@ -41,25 +49,29 @@ public class CpuParser {
                     // Iterate through the stack trace
                     for (int i = 1; i < item.stackTrace.size(); i++) {
                         String name = item.stackTrace.get(i);
-                        boolean found = false;
-                        // Check if the child node already exists
-                        for (Data child: current.children) {
-                            if (child.name.equals(name)) {
-                                // Update the value of the existing child node
-                                child.value = Math.max(child.value, item.time);
-                                current = child;
-                                found = true;
-                                break;
+
+                        if (!containsAnySkipList(name, skipList)) {
+
+                            boolean found = false;
+                            // Check if the child node already exists
+                            for (Data child : current.children) {
+                                if (child.name.equals(name)) {
+                                    // Update the value of the existing child node
+                                    child.value = Math.max(child.value, item.time);
+                                    current = child;
+                                    found = true;
+                                    break;
+                                }
                             }
-                        }
-                        if (!found) {
-                            // Create a new child node if it doesn't exist
-                            Data newChild = new Data();
-                            newChild.name = name;
-                            newChild.value = item.time;
-                            newChild.children = new ArrayList < > ();
-                            current.children.add(newChild);
-                            current = newChild;
+                            if (!found) {
+                                // Create a new child node if it doesn't exist
+                                Data newChild = new Data();
+                                newChild.name = name;
+                                newChild.value = item.time;
+                                newChild.children = new ArrayList<>();
+                                current.children.add(newChild);
+                                current = newChild;
+                            }
                         }
                     }
                 }
@@ -108,18 +120,26 @@ public class CpuParser {
             myWriter.flush(); // Flush the writer
         } catch (IOException e) {
             System.out.println("An error occurred."); // Print an error message
-            //            e.printStackTrace();    // Print the stack trace of the exception
         }
+    }
+
+    public static boolean containsAnySkipList(String str, ArrayList<String> arrayList) {
+        for (String s : arrayList) {
+            if (str.contains(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static class Item {
         public int time;
-        public List < String > stackTrace;
+        public List<String> stackTrace;
     }
 
     private static class Data {
         public String name;
         public int value;
-        public List < Data > children;
+        public List<Data> children;
     }
 }
