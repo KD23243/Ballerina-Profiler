@@ -19,8 +19,8 @@ public class CpuParser {
         try {
             ArrayList<String> skipList = new ArrayList<String>(Arrays.asList(skipString.split(",")));
 
-//            skipList.add("$gen");
-//            skipList.add("getAnonType");
+            skipList.add("$gen");
+            skipList.add("getAnonType");
 
             String file = "CpuPre.json"; // File path of the Profiler Output json file
             String jsonInput = readFileAsString(file); // Read the json file as a string
