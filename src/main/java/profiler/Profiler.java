@@ -22,13 +22,11 @@ public class Profiler {
     protected Profiler() {
         shutDownHookProfiler();
         try {
-            String content = Files.readString(Paths.get("usedPaths.txt"));
-            List<String> skippedListRead = new ArrayList<String>(Arrays.asList(content.split(", ")));
+            String content = Files.readString(Paths.get("usedPathsList.txt"));
+            List<String> skippedListRead = new ArrayList<>(Arrays.asList(content.split(", ")));
             skippedList.addAll(skippedListRead);
             skippedClasses.addAll(skippedList);
-        } catch (IOException e) {
-//            throw new RuntimeException(e);
-        }
+        } catch (IOException ignored) {}
     }
 
     public static Profiler getInstance() {
@@ -135,12 +133,11 @@ public class Profiler {
     // This method returns a string representation of the current call stack in the form of a list of strings
     public String getStackTrace() {
         ArrayList<String> result = new ArrayList<>();
-        //Uses the StackWalker class to get a list of stack frames representing the current call stack
+
         final List<StackWalker.StackFrame> stack = StackWalker.getInstance().walk(s -> s.collect(Collectors.toList()));
         stack.subList(0, 2).clear(); //Removes the first 2 stack frames (index 0 and 1) and reverses the order of the remaining stack frames
         Collections.reverse(stack); //Reverse the collection
-//        stack.subList(0, 2).clear(); //Removes the top 2 stack frames
-        // Loop over stack frames and add filtered frames to a list of strings
+
         for (StackWalker.StackFrame frame : stack) {
             if (skippedClasses.contains(frame.getClassName())) {
                 String frameString = frame.toString();
@@ -148,52 +145,36 @@ public class Profiler {
                 result.add(decodeIdentifier(frameString));
             }
         }
-        // Convert result list to a string and return it
+
         return result.toString();
     }
 
     // This method takes an encoded identifier string as input and returns the decoded version of it
     public static String decodeIdentifier(String encodedIdentifier) {
-        // If the input string is null, just return null
         if (encodedIdentifier == null) {
             return null;
         }
-        // Create a StringBuilder to hold the decoded identifier
-        StringBuilder sb = new StringBuilder();
-        // Initialize the index to 0
+        StringBuilder stringBuilder = new StringBuilder();
         int index = 0;
-        // Loop through the characters in the encoded identifier
         while (index < encodedIdentifier.length()) {
-            // If the current character is a '$' and there are at least 4 characters left in the string
             if (encodedIdentifier.charAt(index) == '$' && index + 4 < encodedIdentifier.length()) {
-                // Check if the next 4 characters are a Unicode code point
                 if (isUnicodePoint(encodedIdentifier, index)) {
-                    // If they are, append the character corresponding to that code point to the StringBuilder
-                    sb.append((char) Integer.parseInt(encodedIdentifier.substring(index + 1, index + 5)));
-                    // Update the index to skip over the 5 characters that were just decoded
+                    stringBuilder.append((char) Integer.parseInt(encodedIdentifier.substring(index + 1, index + 5)));
                     index += 5;
                 } else {
-                    // If the next 4 characters are not a Unicode code point, just append the '$' character
-                    sb.append(encodedIdentifier.charAt(index));
-                    // Update the index to move to the next character
+                    stringBuilder.append(encodedIdentifier.charAt(index));
                     index++;
                 }
             } else {
-                // If the current character is not a '$' or there are less than 4 characters left in the string,
-                // just append the current character
-                sb.append(encodedIdentifier.charAt(index));
-                // Update the index to move to the next character
+                stringBuilder.append(encodedIdentifier.charAt(index));
                 index++;
             }
         }
-        // Once all the characters have been decoded and added to the StringBuilder, call the decodeGeneratedMethodName method
-        // to remove any generated method prefixes from the identifier, and return the result
-        return decodeGeneratedMethodName(sb.toString());
+        return decodeGeneratedMethodName(stringBuilder.toString());
     }
 
     // This method checks if the substring of the encoded identifier starting from the given index represents a Unicode code point
     private static boolean isUnicodePoint(String encodedName, int index) {
-        // Check if the substring contains only digits
         return (containsOnlyDigits(encodedName.substring(index + 1, index + 5)));
     }
 
@@ -205,14 +186,11 @@ public class Profiler {
 
     // This method checks if the given string contains only digits
     private static boolean containsOnlyDigits(String digitString) {
-        // Loop through each character in the string and check if it is a digit
         for (int i = 0; i < digitString.length(); i++) {
             if (!Character.isDigit(digitString.charAt(i))) {
-                // If any character is not a digit, return false
                 return false;
             }
         }
-        // If all characters are digits, return true
         return true;
     }
 }

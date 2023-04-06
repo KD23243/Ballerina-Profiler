@@ -5,11 +5,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
 
-/*  This class is an adapter that wraps a method in order to profile its execution time.
-It is using the ASM library to generate bytecode for the wrapped method.
-The profiler instance is retrieved from the class "profiler/Profiler" and its methods are called
-to start and stop the profiling for the given method.   */
-
 public class MethodWrapperAdapter extends AdviceAdapter {
 
     Label tryStart = new Label();

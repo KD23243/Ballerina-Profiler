@@ -83,8 +83,6 @@ public class ServerFrontEnd {
                 "         fill: greenyellow !important;\n" +
                 "      }\n" +
                 "\n" +
-
-
                 ".d3-flame-graph-tip {\n" +
                 "         visibility: hidden !important;\n" +
                 "      }" +
@@ -96,16 +94,12 @@ public class ServerFrontEnd {
                 "         height: 50px !important;\n" +
                 "      }\n" +
                 "\n" +
-
                 "#chart {\n" +
                 "         max-height: 780px;\n" +
                 "         width: 1840px;\n" +
                 "         overflow-y: auto;\n" +
                 "         background-color: #F8F8F8;\n" +
                 "      }" +
-
-
-
                 ".form-control{\n" +
                 "         border-radius: 0px !important;\n" +
                 "         box-sizing:border-box !important;\n" +
@@ -188,10 +182,8 @@ public class ServerFrontEnd {
                 "         document.getElementById(\"searchBox\").value = \"\";\n" +
                 "         d3.selectAll(\"rect\").classed(\"highlight\", false);\n" +
                 "      }" +
-                //func1
                 "      // Define a clear function to clear the search bar and reset the flame graph\n" +
                 "      function stop() {\n" +
-
                 "const answer = window.confirm(\"Leaving this page will end the profiling process\");\n" +
                 "\n" +
                 "  // return the user's answer\n" +
@@ -201,8 +193,6 @@ public class ServerFrontEnd {
                 "  } " +
                 "}\n" +
                 "\n" +
-
-                //func2
                 "function saveAsHtml() {\n" +
                 "  // Send an AJAX request to retrieve the current HTML content\n" +
                 "  var xhr = new XMLHttpRequest();\n" +
@@ -245,8 +235,6 @@ public class ServerFrontEnd {
                 "  };\n" +
                 "  xhr.send();\n" +
                 "}\n" +
-
-
                 "      // Define a function to reset the zoom on the flame graph\n" +
                 "      function resetZoom() {\n" +
                 "         flameGraph.resetZoom();\n" +

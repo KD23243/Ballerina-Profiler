@@ -14,14 +14,60 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CpuParser {
-    public static void initializeCPUParser(String skipString) throws Exception {
+    public static void initializeCPUParser(String skipFunctionString) {
+        ArrayList<String> skipList = new ArrayList<>();
+        skipList = skipFunctionString != null ? parseSkipFunctionStringToList(skipFunctionString) : skipList;
+        skipList.add("$gen");
+        skipList.add("getAnonType");
+        cpuParser(skipList);
+    }
 
+    private static ArrayList<String> parseSkipFunctionStringToList(String skipFunctionString) {
+        ArrayList<String> skipList = new ArrayList<>();
+        String[] elements = skipFunctionString.replace("[", "").replace("]", "").split(", ");
+        skipList.addAll(Arrays.asList(elements));
+        return skipList;
+    }
+
+    public static int getTotalTime(JSONObject node) {
+        int totalTime = 0; // Initialize total time
+        JSONArray children = node.optJSONArray("children"); // Get the "children" array from the JSONObject
+        if (children != null) {
+            for (int i = 0; i < children.length(); i++) {
+                if (children.getJSONObject(i).getInt("value") != -1) {
+                    totalTime += children.getJSONObject(i).getInt("value"); // Add the value to the total time
+                }
+            }
+        }
+        return totalTime;
+    }
+
+    public static String readFileAsString(String file) throws Exception {
+        return new String(Files.readAllBytes(Paths.get(file))); // Read Files as a String
+    }
+
+    static void writer(String parsedJson, String fileName) {
+        parsedJson = "var data = " + parsedJson;
         try {
-            ArrayList<String> skipList = new ArrayList<String>(Arrays.asList(skipString.split(",")));
+            FileWriter myWriter = new FileWriter(fileName); // Create a FileWriter object to write to the specified file
+            myWriter.write(parsedJson); // Write the parsed json string to the file
+            myWriter.flush(); // Flush the writer
+        } catch (IOException e) {
+            System.out.println("An error occurred."); // Print an error message
+        }
+    }
 
-            skipList.add("$gen");
-            skipList.add("getAnonType");
+    public static boolean containsAnySkipList(String str, ArrayList<String> arrayList) {
+        for (String s : arrayList) {
+            if (str.contains(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    private static void cpuParser(ArrayList<String> skipList) {
+        try {
             String file = "CpuPre.json"; // File path of the Profiler Output json file
             String jsonInput = readFileAsString(file); // Read the json file as a string
 
@@ -79,57 +125,13 @@ public class CpuParser {
 
             String jsonString = mapper.writeValueAsString(output); // Convert the output data object to a json string
             JSONObject jsonObject = new JSONObject(jsonString); // Convert the json string to a JSONObject
-
             int totalTime = getTotalTime(jsonObject); // Calculate the total time
-
             jsonObject.remove("value"); // Remove the "value" key
             jsonObject.put("value", totalTime); // Add the total time as the value
-
             writer(jsonObject.toString(), "performance_report.json"); // write the json object to a file
-
-        } catch (Exception | Error e) {
-            System.out.println(e);
+        } catch (Exception | Error throwable) {
+            System.out.println(throwable);
         }
-    }
-
-    public static int getTotalTime(JSONObject node) {
-        int total = 0; // Initialize total time
-        JSONArray children = node.optJSONArray("children"); // Get the "children" array from the JSONObject
-        if (children != null) {
-            // Iterate through the children array
-            for (int i = 0; i < children.length(); i++) {
-                // Get the value of the child node and check if the value is not equal to -1
-                if (children.getJSONObject(i).getInt("value") != -1) {
-                    total += children.getJSONObject(i).getInt("value"); // Add the value to the total time
-                }
-            }
-        }
-        return total; // Return the total time
-    }
-
-    public static String readFileAsString(String file) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(file))); // Read Files as a String
-    }
-
-    static void writer(String parsedJson, String fileName) {
-        // Add a variable declaration to the parsed json string
-        parsedJson = "var data = " + parsedJson;
-        try {
-            FileWriter myWriter = new FileWriter(fileName); // Create a FileWriter object to write to the specified file
-            myWriter.write(parsedJson); // Write the parsed json string to the file
-            myWriter.flush(); // Flush the writer
-        } catch (IOException e) {
-            System.out.println("An error occurred."); // Print an error message
-        }
-    }
-
-    public static boolean containsAnySkipList(String str, ArrayList<String> arrayList) {
-        for (String s : arrayList) {
-            if (str.contains(s)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static class Item {

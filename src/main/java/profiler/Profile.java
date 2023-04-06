@@ -36,7 +36,7 @@ public class Profile {
     private String getFormattedStats() {
 
         int time = (int) this.totalTime;
-        String[] stackTrace = new String[] {this.name};
+        String[] stackTrace = new String[]{this.name};
 
         // create the string representation of the output
         StringBuilder sb = new StringBuilder();
@@ -57,7 +57,3 @@ public class Profile {
         return this.getFormattedStats();
     }
 }
-
-//the problem is we are not profiling init correctly. it just takes the value of the child.
-
-//we go up to ballerina.http.2.http_client.createClient() but after that, the other 4 we don't profile

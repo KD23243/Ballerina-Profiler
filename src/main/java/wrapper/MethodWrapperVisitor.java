@@ -44,15 +44,3 @@ public class MethodWrapperVisitor extends ClassVisitor {
         return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
     }
 }
-
-
-//getAnonType66
-//<init>
-
-//add function to list all the unwanted stuff
-
-//remove from the stacktrace
-
-//object class for testing simple
-
-//break loop if found

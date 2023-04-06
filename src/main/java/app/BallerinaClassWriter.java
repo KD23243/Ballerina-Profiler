@@ -14,7 +14,7 @@ public class BallerinaClassWriter extends ClassWriter {
     protected String getCommonSuperClass(String type1, String type2) {
 
         ClassLoader classLoader = getClassLoader();
-        Class < ? > class1;
+        Class<?> class1;
 
         try {
             class1 = Class.forName(type1.replace('/', '.'), false, classLoader);
@@ -22,7 +22,7 @@ public class BallerinaClassWriter extends ClassWriter {
             return OBJECT_CLASS;
         }
 
-        Class < ? > class2;
+        Class<?> class2;
         try {
             class2 = Class.forName(type2.replace('/', '.'), false, classLoader);
         } catch (Exception e) {
