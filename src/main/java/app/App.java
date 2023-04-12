@@ -62,12 +62,30 @@ public class App {
                 switch (args[i]) {
                     case "--file":
                         balJarName = args[i + 1];
+                        if ((balJarName.startsWith("[") && balJarName.endsWith("]"))) {
+                            balJarName = balJarName.substring(1, balJarName.length() - 1);
+                        }else {
+                            System.out.println("Invalid CLI Argument");
+                            System.exit(0);
+                        }
                         break;
                     case "--args":
                         balJarArgs = args[i + 1];
+                        if (balJarArgs != null && balJarArgs.startsWith("[") && balJarArgs.endsWith("]")) {
+                            balJarArgs = balJarArgs.substring(1, balJarArgs.length() - 1);
+                        }else {
+                            System.out.println("Invalid CLI Argument");
+                            System.exit(0);
+                        }
                         break;
                     case "--skip":
                         skipFunctionString = args[i + 1];
+                        if (skipFunctionString != null && skipFunctionString.startsWith("[") && skipFunctionString.endsWith("]")) {
+                            skipFunctionString = skipFunctionString.substring(1, skipFunctionString.length() - 1);
+                        }else {
+                            System.out.println("Invalid CLI Argument");
+                            System.exit(0);
+                        }
                         break;
                 }
             }
@@ -161,9 +179,9 @@ public class App {
 
     private static void loadDirectories(List<String> changedDirs) {
         try {
-            ProcessBuilder pb = new ProcessBuilder("jar", "uf", "temp.jar");
-            pb.command().addAll(changedDirs);
-            pb.start().waitFor();
+            ProcessBuilder processBuilder = new ProcessBuilder("jar", "uf", "temp.jar");
+            processBuilder.command().addAll(changedDirs);
+            processBuilder.start().waitFor();
             System.out.println(" ○ Directories Loaded: " + (changedDirs.size() - 1));
         } catch (Exception e) {
             System.err.println("Error loading directories: " + e.getMessage());

@@ -18,15 +18,17 @@ public class MethodWrapper extends ClassLoader {
 
     public static void invokeMethods() throws IOException, InterruptedException {
         String[] command = {"java", "-jar", "temp.jar"};
-        command = balJarArgs != null ? Arrays.copyOf(command, command.length + 1) : command;
-        if (balJarArgs != null) command[3] = balJarArgs;
+        if (balJarArgs != null) {
+            command = Arrays.copyOf(command, command.length + 1);
+            command[3] = balJarArgs;
+        }
+
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
         System.out.println(ANSI_ORANGE + "[5/6] Running Executable..." + ANSI_RESET);
-        new BufferedReader(new InputStreamReader(process.getInputStream()))
-                .lines()
-                .forEach(System.out::println);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        reader.lines().forEach(System.out::println);
         process.waitFor();
     }
 
