@@ -44,8 +44,6 @@ public class MethodWrapperVisitor extends ClassVisitor {
         else {
             return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
         }
-
-
     }
 }
 
