@@ -4,12 +4,14 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import static app.App.balFunctionCount;
+
+
 public class MethodWrapperVisitor extends ClassVisitor {
 
     private final String mainClassPackage;
     private final String className;
     private final String strand = "(Lio/ballerina/runtime/internal/scheduling/Strand";
-    private final String valueAnon = "/$value$$anonType$_";
 
     /**
      * Constructor for MethodWrapperVisitor
@@ -26,21 +28,27 @@ public class MethodWrapperVisitor extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+
+        balFunctionCount++;
         // get a MethodVisitor for the visited method
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         String classNameWithoutPackage = className.substring(className.lastIndexOf("/") + 1);
 
-        if (classNameWithoutPackage.startsWith("$") || className.endsWith("Frame.class")) {
-            return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
-        }
-        if (desc.startsWith(strand) && !className.contains("$_init") && !name.startsWith("$init")) {
-            if (className.startsWith(mainClassPackage + valueAnon) && !name.startsWith("$anonType")) {
+        if (desc.startsWith(strand) && !classNameWithoutPackage.endsWith("init.class") && !classNameWithoutPackage.endsWith("$_init.class")){
+            if ((access & Opcodes.ACC_STATIC) == 0) {
                 return new MethodWrapperAdapter(access, methodVisitor, name, desc, 1);
-            } else if (!className.contains("init") && !className.startsWith(mainClassPackage + valueAnon)) {
+            } else {
                 return new MethodWrapperAdapter(access, methodVisitor, name, desc, 0);
             }
         }
+        else {
+            return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
+        }
 
-        return new ResourceWrapperAdapter(access, methodVisitor, name, desc);
+
     }
 }
+
+
+
+//configinit remove

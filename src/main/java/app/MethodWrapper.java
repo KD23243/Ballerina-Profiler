@@ -26,7 +26,7 @@ public class MethodWrapper extends ClassLoader {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
-        System.out.println(ANSI_ORANGE + "[5/6] Running Executable..." + ANSI_RESET);
+        System.out.println(ANSI_CYAN + "[5/6] Running Executable..." + ANSI_RESET);
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         reader.lines().forEach(System.out::println);
         process.waitFor();

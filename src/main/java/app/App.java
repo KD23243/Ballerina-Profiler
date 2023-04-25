@@ -23,7 +23,8 @@ public class App {
     // Define ANSI escape codes for colored console output
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_GRAY = "\033[37m";
-    public static final String ANSI_ORANGE = "\033[1;38;2;255;165;0m";
+//    public static final String ANSI_CYAN = "\033[1;38;2;255;165;0m";
+    public static final String ANSI_CYAN = "\033[1;38;2;32;182;176m";
 
     // Define public static variables for the program
     public static long profilerStartTime = 0;
@@ -32,12 +33,15 @@ public class App {
     public static String balJarName = null; // Path to JAR file
     public static String skipFunctionString = null; // Path to JAR file
 
+
+    public static int balFunctionCount = 0;
+
     public static ArrayList<String> instrumentedPaths = new ArrayList<>(); // Paths of instrumented JAR files
     public static ArrayList<String> instrumentedFiles = new ArrayList<>(); // Names of instrumented JAR files
     public static ArrayList<String> utilInitPaths = new ArrayList<>(); // Paths of utility JAR files
     public static ArrayList<String> utilPaths = new ArrayList<>(); // Additional utility JAR files
-    public static ArrayList<String> usedPaths = new ArrayList<>(); // Additional utility JAR files
-    public static Map<String, byte[]> modifiedClassDef = new HashMap<String, byte[]>();
+//    public static ArrayList<String> usedPaths = new ArrayList<>(); // Additional utility JAR files
+//    public static Map<String, byte[]> modifiedClassDef = new HashMap<String, byte[]>();
 
     public static void main(String[] args) {
         profilerStartTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
@@ -51,7 +55,7 @@ public class App {
 
     private static void printHeader() {
         System.out.println(ANSI_GRAY + "================================================================================" + ANSI_RESET);
-        System.out.println(ANSI_ORANGE + "Ballerina Profiler" + ANSI_RESET + ": Profiling...");
+        System.out.println(ANSI_CYAN + "Ballerina Profiler" + ANSI_RESET + ": Profiling...");
         System.out.println(ANSI_GRAY + "================================================================================" + ANSI_RESET);
         System.out.println("WARNING : Ballerina Profiler is an experimental feature.");
     }
@@ -93,7 +97,7 @@ public class App {
     }
 
     private static void extractTheProfiler() {
-        System.out.println(ANSI_ORANGE + "[1/7] Initializing Profiler..." + ANSI_RESET);
+        System.out.println(ANSI_CYAN + "[1/7] Initializing Profiler..." + ANSI_RESET);
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("jar", "xvf", "Profiler.jar", "profiler");
             Process process = processBuilder.start();
@@ -103,7 +107,7 @@ public class App {
 
     public static void createTempJar(String balJarName) {
         try {
-            System.out.println(ANSI_ORANGE + "[2/7] Copying Executable..." + ANSI_RESET);
+            System.out.println(ANSI_CYAN + "[2/7] Copying Executable..." + ANSI_RESET);
             System.out.println(" ○ Source: " + balJarName);
             Path sourcePath = Paths.get(balJarName);
             Path destinationPath = Paths.get("temp.jar");
@@ -116,7 +120,7 @@ public class App {
     }
 
     private static void initialize(String balJarName) {
-        System.out.println(ANSI_ORANGE + "[3/7] Performing Analysis..." + ANSI_RESET);
+        System.out.println(ANSI_CYAN + "[3/7] Performing Analysis..." + ANSI_RESET);
 
         ArrayList<Class<?>> classFiles = new ArrayList<>();
         ArrayList<String> classNames = new ArrayList<>();
@@ -124,12 +128,12 @@ public class App {
         try {
             findAllClassNames(balJarName, classNames);
             findUtilityClasses(classNames);
-            System.out.println(" ○ Classes Reachable: " + classNames.size());
+            System.out.println(" ○ Java Classes Reachable: " + classNames.size());
         } catch (Exception e) {
             System.out.println("(No such file or directory)");
         }
 
-        System.out.println(ANSI_ORANGE + "[4/7] Instrumenting Functions..." + ANSI_RESET);
+        System.out.println(ANSI_CYAN + "[4/7] Instrumenting Functions..." + ANSI_RESET);
 
         try (JarFile jarFile = new JarFile(balJarName)) {
             String mainClassPackage = mainClassFinder(new URLClassLoader(new URL[]{new File(balJarName).toURI().toURL()}));
@@ -138,8 +142,7 @@ public class App {
 
             for (String className : classNames) {
                 if (mainClassPackage == null) continue;
-
-                boolean isBaseSatisfied = className.startsWith(mainClassPackage + "/$value$$anonType$_") || !className.endsWith("asd");
+                boolean isBaseSatisfied = true;
                 if (className.startsWith(mainClassPackage.split("/")[0]) || utilPaths.contains(className)) {
                     try (InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className))) {
                         byte[] code = isBaseSatisfied ? modifyMethods(inputStream, mainClassPackage, className) : streamToByte(inputStream);
@@ -153,7 +156,7 @@ public class App {
             try (PrintWriter printWriter = new PrintWriter("usedPathsList.txt")) {
                 printWriter.println(String.join(", ", usedPaths));
             }
-            System.out.println(" ○ Classes Reached: " + classFiles.size());
+//            System.out.println(" ○ Java Classes Reached: " + classFiles.size());
         } catch (Exception | Error ignored) {}
 
         try {
@@ -166,13 +169,14 @@ public class App {
             final File userDirectory = new File(System.getProperty("user.dir")); // Get the user directory
             listAllFiles(userDirectory); // List all files in the user directory and its subdirectories
             List<String> changedDirectories = instrumentedFiles.stream().distinct().collect(Collectors.toList()); // Get a list of the directories containing instrumented files
-            System.out.println(" ○ Classes Modified: " + instrumentedFiles.size()); // Print the number of instrumented files
+            System.out.println(" ○ Modified Java Classes: " + instrumentedFiles.size()); // Print the number of instrumented files
             loadDirectories(changedDirectories);
         } finally {
             for (String instrumentedFilePath : instrumentedPaths) {
                 FileUtils.deleteDirectory(new File(instrumentedFilePath));
             }
             FileUtils.deleteDirectory(new File("profiler"));
+            System.out.println(" ○ Modified Ballerina Functions: " + balFunctionCount);
             invokeMethods();
         }
     }
@@ -182,7 +186,7 @@ public class App {
             ProcessBuilder processBuilder = new ProcessBuilder("jar", "uf", "temp.jar");
             processBuilder.command().addAll(changedDirs);
             processBuilder.start().waitFor();
-            System.out.println(" ○ Directories Loaded: " + (changedDirs.size() - 1));
+//            System.out.println(" ○ Directories Loaded: " + (changedDirs.size() - 1));
         } catch (Exception e) {
             System.err.println("Error loading directories: " + e.getMessage());
         }
@@ -245,8 +249,8 @@ public class App {
             try {
                 long profilerTotalTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS) - profilerStartTime;
                 FileUtils.delete(new File("temp.jar"));
-                System.out.println("\n" + ANSI_ORANGE + "[6/6] Generating Output..." + ANSI_RESET);
-                Thread.sleep(1000);
+                System.out.println("\n" + ANSI_CYAN + "[6/6] Generating Output..." + ANSI_RESET);
+                Thread.sleep(100);
                 initializeCPUParser(skipFunctionString);
                 FileUtils.delete(new File("usedPathsList.txt"));
                 FileUtils.delete(new File("CpuPre.json"));

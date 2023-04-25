@@ -19,6 +19,9 @@ public class CpuParser {
         skipList = skipFunctionString != null ? parseSkipFunctionStringToList(skipFunctionString) : skipList;
         skipList.add("$gen");
         skipList.add("getAnonType");
+//
+//        skipList.add("$anonType");
+//        skipList.add("$value$Client");
         cpuParser(skipList);
     }
 
