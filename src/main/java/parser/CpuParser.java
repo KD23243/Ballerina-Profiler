@@ -19,9 +19,7 @@ public class CpuParser {
         skipList = skipFunctionString != null ? parseSkipFunctionStringToList(skipFunctionString) : skipList;
         skipList.add("$gen");
         skipList.add("getAnonType");
-//
-//        skipList.add("$anonType");
-//        skipList.add("$value$Client");
+
         cpuParser(skipList);
     }
 
@@ -98,7 +96,10 @@ public class CpuParser {
                     // Iterate through the stack trace
                     for (int i = 1; i < item.stackTrace.size(); i++) {
                         String name = item.stackTrace.get(i);
-
+                        if (name.contains("$configureInit()")) {
+                            removeChildrenByNodeName(output, name);
+                            break;
+                        }
                         if (!containsAnySkipList(name, skipList)) {
 
                             boolean found = false;
@@ -134,6 +135,16 @@ public class CpuParser {
             writer(jsonObject.toString(), "performance_report.json"); // write the json object to a file
         } catch (Exception | Error throwable) {
             System.out.println(throwable);
+        }
+    }
+
+    private static void removeChildrenByNodeName(Data node, String nodeName) {
+        if (node.name.equals(nodeName)) {
+            node.children.clear();
+            return;
+        }
+        for (Data child : node.children) {
+            removeChildrenByNodeName(child, nodeName);
         }
     }
 

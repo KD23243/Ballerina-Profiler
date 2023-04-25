@@ -257,7 +257,7 @@ public class App {
                 System.out.println(" ○ Execution Time: " + profilerTotalTime / 1000 + " Seconds");
                 deleteTempData();
                 initializeServer();
-                FileUtils.delete(new File("performance_report.json"));
+//                FileUtils.delete(new File("performance_report.json"));
                 System.out.println("--------------------------------------------------------------------------------");
             } catch (Exception ignore) {}
         }));
