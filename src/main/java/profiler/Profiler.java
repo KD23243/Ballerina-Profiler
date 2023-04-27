@@ -141,7 +141,14 @@ public class Profiler {
         for (StackWalker.StackFrame frame : stack) {
             if (skippedClasses.contains(frame.getClassName())) {
                 String frameString = frame.toString();
-                frameString = "\"" + frameString.replaceAll("\\(.*\\)", "") + "()" + "\"";
+
+                if (frameString.contains("&")){
+                    frameString = "\"" + frameString + "\"";
+                }else {
+                    frameString = "\"" + frameString.replaceAll("\\(.*\\)", "") + "()" + "\"";
+                    int lastDotIndex = frameString.lastIndexOf('.');
+                    frameString = frameString.substring(0, lastDotIndex).replace('.', '/') + frameString.substring(lastDotIndex);
+                }
                 result.add(decodeIdentifier(frameString));
             }
         }

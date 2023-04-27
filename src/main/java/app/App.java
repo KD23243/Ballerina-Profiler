@@ -145,7 +145,7 @@ public class App {
                 boolean isBaseSatisfied = true;
                 if (className.startsWith(mainClassPackage.split("/")[0]) || utilPaths.contains(className)) {
                     try (InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className))) {
-                        byte[] code = isBaseSatisfied ? modifyMethods(inputStream, mainClassPackage, className) : streamToByte(inputStream);
+                        byte[] code = isBaseSatisfied ? modifyMethods(inputStream) : streamToByte(inputStream);
                         classFiles.add(customClassLoader.loadClass(code));
                         usedPaths.add(className.replace(".class", "").replace("/", "."));
                         printCode(className, code);
@@ -156,7 +156,7 @@ public class App {
             try (PrintWriter printWriter = new PrintWriter("usedPathsList.txt")) {
                 printWriter.println(String.join(", ", usedPaths));
             }
-//            System.out.println(" ○ Java Classes Reached: " + classFiles.size());
+            System.out.println(" ○ Java Classes Reached: " + classFiles.size());
         } catch (Exception | Error ignored) {}
 
         try {
@@ -176,7 +176,7 @@ public class App {
                 FileUtils.deleteDirectory(new File(instrumentedFilePath));
             }
             FileUtils.deleteDirectory(new File("profiler"));
-            System.out.println(" ○ Modified Ballerina Functions: " + balFunctionCount);
+//            System.out.println(" ○ Modified Ballerina Functions: " + balFunctionCount);
             invokeMethods();
         }
     }
@@ -186,7 +186,7 @@ public class App {
             ProcessBuilder processBuilder = new ProcessBuilder("jar", "uf", "temp.jar");
             processBuilder.command().addAll(changedDirs);
             processBuilder.start().waitFor();
-//            System.out.println(" ○ Directories Loaded: " + (changedDirs.size() - 1));
+            System.out.println(" ○ Directories Loaded: " + (changedDirs.size() - 1));
         } catch (Exception e) {
             System.err.println("Error loading directories: " + e.getMessage());
         }
@@ -253,11 +253,11 @@ public class App {
                 Thread.sleep(100);
                 initializeCPUParser(skipFunctionString);
                 FileUtils.delete(new File("usedPathsList.txt"));
-                FileUtils.delete(new File("CpuPre.json"));
+//                FileUtils.delete(new File("CpuPre.json"));
                 System.out.println(" ○ Execution Time: " + profilerTotalTime / 1000 + " Seconds");
                 deleteTempData();
                 initializeServer();
-//                FileUtils.delete(new File("performance_report.json"));
+                FileUtils.delete(new File("performance_report.json"));
                 System.out.println("--------------------------------------------------------------------------------");
             } catch (Exception ignore) {}
         }));

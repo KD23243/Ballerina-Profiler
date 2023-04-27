@@ -49,31 +49,18 @@ public class MethodWrapper extends ClassLoader {
         return stream.readAllBytes(); // The byte array is then returned
     }
 
-    public static byte[] modifyMethods(InputStream inputStream, String mainClassPackage, String className) throws IOException {
+    public static byte[] modifyMethods(InputStream inputStream) throws IOException {
         byte[] code;
-        if (className.endsWith("init.class")) {
-            try {
-                ClassReader classReader = new ClassReader(inputStream); //Create a ClassReader object using the inputStream
-                ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS); //Create a ClassWriter object using the classReader with only COMPUTE_MAXS
-                ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className); //Create a ClassVisitor object to make changes to the class
-                classReader.accept(change, ClassReader.EXPAND_FRAMES); //Accept the changes using the classReader
-                code = classWriter.toByteArray(); //Convert the changed code into a Byte Array
-                return code; //Return the Byte Array
-            } catch (Exception | Error ignore) {
-                System.out.println(ignore); //Print the exception or error message
-            }
-        } else {
             try {
                 ClassReader reader = new ClassReader(inputStream); //Create a ClassReader object using the inputStream
                 ClassWriter classWriter = new BallerinaClassWriter(reader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES); //Create a BallerinaClassWriter object using the classReader with both COMPUTE_MAXS and COMPUTE_FRAMES
-                ClassVisitor change = new MethodWrapperVisitor(classWriter, mainClassPackage, className); //Create a ClassVisitor object to make changes to the class
+                ClassVisitor change = new MethodWrapperVisitor(classWriter); //Create a ClassVisitor object to make changes to the class
                 reader.accept(change, ClassReader.EXPAND_FRAMES); //Accept the changes using the classReader
                 code = classWriter.toByteArray(); //Convert the changed code into a Byte Array
                 return code; //Return the Byte Array
             } catch (Exception | Error e) {
                 e.printStackTrace(); //Print the stack trace of the exception or error
             }
-        }
         return null; //Return null if the code was not modified
     }
 
