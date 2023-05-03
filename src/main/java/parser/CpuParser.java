@@ -19,7 +19,6 @@ public class CpuParser {
         skipList = skipFunctionString != null ? parseSkipFunctionStringToList(skipFunctionString) : skipList;
         skipList.add("$gen");
         skipList.add("getAnonType");
-
         cpuParser(skipList);
     }
 
@@ -47,10 +46,10 @@ public class CpuParser {
         return new String(Files.readAllBytes(Paths.get(file))); // Read Files as a String
     }
 
-    static void writer(String parsedJson, String fileName) {
+    static void writer(String parsedJson) {
         parsedJson = "var data = " + parsedJson;
         try {
-            FileWriter myWriter = new FileWriter(fileName); // Create a FileWriter object to write to the specified file
+            FileWriter myWriter = new FileWriter("performance_report.json"); // Create a FileWriter object to write to the specified file
             myWriter.write(parsedJson); // Write the parsed json string to the file
             myWriter.flush(); // Flush the writer
         } catch (IOException e) {
@@ -132,7 +131,7 @@ public class CpuParser {
             int totalTime = getTotalTime(jsonObject); // Calculate the total time
             jsonObject.remove("value"); // Remove the "value" key
             jsonObject.put("value", totalTime); // Add the total time as the value
-            writer(jsonObject.toString(), "performance_report.json"); // write the json object to a file
+            writer(jsonObject.toString()); // write the json object to a file
         } catch (Exception | Error throwable) {
             System.out.println(throwable);
         }

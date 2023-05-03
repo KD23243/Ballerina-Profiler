@@ -44,11 +44,6 @@ public class MethodWrapper extends ClassLoader {
         }
     }
 
-    // This method takes an InputStream as a parameter and converts it to a byte array.
-    public static byte[] streamToByte(InputStream stream) throws IOException {
-        return stream.readAllBytes(); // The byte array is then returned
-    }
-
     public static byte[] modifyMethods(InputStream inputStream) throws IOException {
         byte[] code;
             try {

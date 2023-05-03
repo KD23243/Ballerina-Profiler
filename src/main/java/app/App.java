@@ -23,7 +23,6 @@ public class App {
     // Define ANSI escape codes for colored console output
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_GRAY = "\033[37m";
-//    public static final String ANSI_CYAN = "\033[1;38;2;255;165;0m";
     public static final String ANSI_CYAN = "\033[1;38;2;32;182;176m";
 
     // Define public static variables for the program
@@ -33,15 +32,10 @@ public class App {
     public static String balJarName = null; // Path to JAR file
     public static String skipFunctionString = null; // Path to JAR file
 
-
-    public static int balFunctionCount = 0;
-
     public static ArrayList<String> instrumentedPaths = new ArrayList<>(); // Paths of instrumented JAR files
     public static ArrayList<String> instrumentedFiles = new ArrayList<>(); // Names of instrumented JAR files
     public static ArrayList<String> utilInitPaths = new ArrayList<>(); // Paths of utility JAR files
     public static ArrayList<String> utilPaths = new ArrayList<>(); // Additional utility JAR files
-//    public static ArrayList<String> usedPaths = new ArrayList<>(); // Additional utility JAR files
-//    public static Map<String, byte[]> modifiedClassDef = new HashMap<String, byte[]>();
 
     public static void main(String[] args) {
         profilerStartTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
@@ -142,10 +136,9 @@ public class App {
 
             for (String className : classNames) {
                 if (mainClassPackage == null) continue;
-                boolean isBaseSatisfied = true;
                 if (className.startsWith(mainClassPackage.split("/")[0]) || utilPaths.contains(className)) {
                     try (InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className))) {
-                        byte[] code = isBaseSatisfied ? modifyMethods(inputStream) : streamToByte(inputStream);
+                        byte[] code = modifyMethods(inputStream);
                         classFiles.add(customClassLoader.loadClass(code));
                         usedPaths.add(className.replace(".class", "").replace("/", "."));
                         printCode(className, code);
@@ -176,7 +169,6 @@ public class App {
                 FileUtils.deleteDirectory(new File(instrumentedFilePath));
             }
             FileUtils.deleteDirectory(new File("profiler"));
-//            System.out.println(" ○ Modified Ballerina Functions: " + balFunctionCount);
             invokeMethods();
         }
     }
@@ -253,7 +245,7 @@ public class App {
                 Thread.sleep(100);
                 initializeCPUParser(skipFunctionString);
                 FileUtils.delete(new File("usedPathsList.txt"));
-//                FileUtils.delete(new File("CpuPre.json"));
+                FileUtils.delete(new File("CpuPre.json"));
                 System.out.println(" ○ Execution Time: " + profilerTotalTime / 1000 + " Seconds");
                 deleteTempData();
                 initializeServer();
@@ -263,3 +255,5 @@ public class App {
         }));
     }
 }
+
+//bal test --testreport

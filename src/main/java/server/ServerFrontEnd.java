@@ -17,19 +17,20 @@ public class ServerFrontEnd {
                 "\n" +
                 "<style>\n" +
                 "      body {\n" +
-                "         background-color: white;\n" +
+                "         background-color: #1B2024;\n" +
                 "      }\n" +
                 "\n" +
                 "      .container {\n" +
                 "         padding-left: 0px;\n" +
                 "         margin-left: 40px;\n" +
-                "      }\n" +
+                "      }" +
                 "\n" +
                 "      .btn {\n" +
-                "         border-radius: 0px;\n" +
+                "         border-radius: 10px;\n" +
                 "         border: 1px solid #20b6b0;\n" +
                 "         background-color: #20b6b0;\n" +
-                "         color: #fff;\n" +
+                "         color: #1B2024;\n" +
+                "         font-weight: bold;\n" +
                 "         font-family: pragmatica, sans-serif;\n" +
                 "      }\n" +
                 "\n" +
@@ -39,7 +40,7 @@ public class ServerFrontEnd {
                 "      }\n" +
                 "\n" +
                 "      .btn:focus {\n" +
-                "         border-radius: 0px;\n" +
+                "         border-radius: 10px;\n" +
                 "         border: 1px solid #20b6b0;\n" +
                 "         background-color: #20b6b0;\n" +
                 "         color: #fff;\n" +
@@ -51,14 +52,21 @@ public class ServerFrontEnd {
                 "      }\n" +
                 "\n" +
                 "      .header {\n" +
-                "         margin-left: -40px;\n" +
+                "         margin-top: 30px;\n" +
                 "         padding-right: 40px;\n" +
-                "         width: 1920px;\n" +
+                "         width: 1840px;\n" +
+                "         left: 50%;\n" +
                 "         margin-bottom: 10px;\n" +
                 "         padding-bottom: 20px;\n" +
                 "         border-bottom: 0px solid #1d1d1d;\n" +
-                "         background-color: #494949;\n" +
+                "         background-color: #252A2E;\n" +
+                "         border-radius: 20px;\n" +
                 "      }\n" +
+
+                ".d3-flame-graph rect {\n" +
+                "         stroke: #252A2E;\n" +
+                "         fill-opacity: .8;\n" +
+                "      }"+
                 "\n" +
                 "      .header h3 {\n" +
                 "         margin-left: 40px;\n" +
@@ -95,20 +103,33 @@ public class ServerFrontEnd {
                 "      }\n" +
                 "\n" +
                 "#chart {\n" +
+                "         margin-top: 40px;\n" +
+                "         margin-bottom: 40px;\n" +
                 "         max-height: 780px;\n" +
                 "         width: 1840px;\n" +
+                "         border-radius: 20px;\n" +
                 "         overflow-y: auto;\n" +
-                "         background-color: #F8F8F8;\n" +
+                "         overflow-x: auto;\n" +
+                "         background-color: #252A2E;\n" +
                 "      }" +
-                ".form-control{\n" +
-                "         border-radius: 0px !important;\n" +
-                "         box-sizing:border-box !important;\n" +
-                "         font-size:17px !important;\n" +
-                "         height:2em !important;\n" +
-                "         padding:.5em !important;\n" +
-                "         transition:all 2s ease-in !important;\n" +
-                "         width:300px !important;\n" +
-                "         z-index:1 !important;\n" +
+
+                "#details{\n" +
+                "         color: #fff;\n" +
+                "         padding: 20px;\n" +
+                "         position: absolute;\n" +
+                "         left: 50%;\n" +
+                "         font-weight: bold;\n" +
+                "         transform: translate(-50%, -50%);\n" +
+                "      }" +
+                ".form-control {\n" +
+                "         border: solid 3px #fff;\n" +
+                "         box-sizing: border-box;\n" +
+                "         font-size: 17px;\n" +
+                "         height: 2em;\n" +
+                "         padding: .5em;\n" +
+                "         transition: all 2s ease-in;\n" +
+                "         width: 300px;\n" +
+                "         z-index: 1;\n" +
                 "      }\n" +
                 "\n" +
                 "   </style>" +
@@ -135,7 +156,6 @@ public class ServerFrontEnd {
                 "         <img class=\"balLogo\" src=\"https://ballerina.io/images/ballerina-logo-white.svg\" alt=\"B7A\"/>\n" +
                 "      </div>\n" +
                 "      <div id=\"chart\"></div>\n" +
-                "      <hr>\n" +
                 "      <div id=\"details\"></div>\n" +
                 "   </div>\n" +
                 "   <script type=\"text/javascript\" src=\"https://d3js.org/d3.v7.js\"></script>\n" +

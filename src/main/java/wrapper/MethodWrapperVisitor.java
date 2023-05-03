@@ -4,9 +4,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import static app.App.balFunctionCount;
-
-
 public class MethodWrapperVisitor extends ClassVisitor {
     private final String strand = "(Lio/ballerina/runtime/internal/scheduling/Strand";
 
@@ -21,8 +18,6 @@ public class MethodWrapperVisitor extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-
-        balFunctionCount++;
         // get a MethodVisitor for the visited method
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         if (desc.startsWith(strand)){
