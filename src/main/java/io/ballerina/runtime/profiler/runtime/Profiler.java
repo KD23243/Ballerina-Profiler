@@ -1,4 +1,4 @@
-package profiler;
+package io.ballerina.runtime.profiler.runtime;
 
 
 import java.io.FileWriter;

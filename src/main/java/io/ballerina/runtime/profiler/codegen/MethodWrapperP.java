@@ -1,9 +1,8 @@
-package app;
+package io.ballerina.runtime.profiler.codegen;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import wrapper.MethodWrapperVisitor;
 
 import java.io.*;
 import java.net.URL;
@@ -12,9 +11,9 @@ import java.util.Arrays;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import static app.App.*;
+import static io.ballerina.runtime.profiler.Main.*;
 
-public class MethodWrapper extends ClassLoader {
+public class MethodWrapperP extends ClassLoader {
 
     public static void invokeMethods() throws IOException, InterruptedException {
         String[] command = {"java", "-jar", "temp.jar"};
@@ -48,8 +47,8 @@ public class MethodWrapper extends ClassLoader {
         byte[] code;
             try {
                 ClassReader reader = new ClassReader(inputStream); //Create a ClassReader object using the inputStream
-                ClassWriter classWriter = new BallerinaClassWriter(reader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES); //Create a BallerinaClassWriter object using the classReader with both COMPUTE_MAXS and COMPUTE_FRAMES
-                ClassVisitor change = new MethodWrapperVisitor(classWriter); //Create a ClassVisitor object to make changes to the class
+                ClassWriter classWriter = new ClassWriterP(reader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES); //Create a BallerinaClassWriter object using the classReader with both COMPUTE_MAXS and COMPUTE_FRAMES
+                ClassVisitor change = new ClassVisitorP(classWriter); //Create a ClassVisitor object to make changes to the class
                 reader.accept(change, ClassReader.EXPAND_FRAMES); //Accept the changes using the classReader
                 code = classWriter.toByteArray(); //Convert the changed code into a Byte Array
                 return code; //Return the Byte Array

@@ -47,7 +47,9 @@ jar {
                 'Built-By': System.getProperty('user.name'),
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
-                'Main-Class': 'app.App'
+                'Main-Class': 'io.ballerina.runtime.profiler.Main'
+
+
     }
     archiveName 'Profiler.jar'
 }

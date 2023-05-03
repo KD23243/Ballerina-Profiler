@@ -1,14 +1,14 @@
-package app;
+package io.ballerina.runtime.profiler.codegen;
 
 import org.objectweb.asm.ClassReader;
 
-public class MethodWrapperClassLoader extends ClassLoader {
+public class ClassLoaderP extends ClassLoader {
 
-    public MethodWrapperClassLoader(ClassLoader parent) {
+    public ClassLoaderP(ClassLoader parent) {
         super(parent);
     }
 
-    protected Class<?> loadClass(byte[] code) {
+    public Class<?> loadClass(byte[] code) {
         Class<?> classOut = null;
 
         String name = readClassName(code);

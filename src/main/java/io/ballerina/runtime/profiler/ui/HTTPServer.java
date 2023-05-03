@@ -1,12 +1,12 @@
-package server;
+package io.ballerina.runtime.profiler.ui;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static server.ServerFrontEnd.getSiteData;
+import static io.ballerina.runtime.profiler.ui.FrontEnd.getSiteData;
 
-public class ProfilerServer {
+public class HTTPServer {
 
     public static final String ANSI_YELLOW = "\033[1;38;2;255;255;0m";
     public static final String ANSI_RESET = "\u001B[0m";

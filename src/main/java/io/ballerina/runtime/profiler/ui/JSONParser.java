@@ -1,4 +1,4 @@
-package parser;
+package io.ballerina.runtime.profiler.ui;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class CpuParser {
+public class JSONParser {
     public static void initializeCPUParser(String skipFunctionString) {
         ArrayList<String> skipList = new ArrayList<>();
         skipList = skipFunctionString != null ? parseSkipFunctionStringToList(skipFunctionString) : skipList;

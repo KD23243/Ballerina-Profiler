@@ -1,12 +1,12 @@
-package app;
+package io.ballerina.runtime.profiler.codegen;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-public class BallerinaClassWriter extends ClassWriter {
+public class ClassWriterP extends ClassWriter {
     private static final String OBJECT_CLASS = "java/lang/Object";
 
-    public BallerinaClassWriter(ClassReader classReader, int flags) {
+    public ClassWriterP(ClassReader classReader, int flags) {
         super(classReader, flags);
     }
 

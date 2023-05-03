@@ -1,5 +1,7 @@
-package app;
+package io.ballerina.runtime.profiler;
 
+import io.ballerina.runtime.profiler.codegen.ClassLoaderP;
+import io.ballerina.runtime.profiler.codegen.MethodWrapperP;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -15,11 +17,10 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static app.MethodWrapper.*;
-import static parser.CpuParser.initializeCPUParser;
-import static server.ProfilerServer.initializeServer;
+import static io.ballerina.runtime.profiler.ui.JSONParser.initializeCPUParser;
+import static io.ballerina.runtime.profiler.ui.HTTPServer.initializeServer;
 
-public class App {
+public class Main {
     // Define ANSI escape codes for colored console output
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_GRAY = "\033[37m";
@@ -93,7 +94,7 @@ public class App {
     private static void extractTheProfiler() {
         System.out.println(ANSI_CYAN + "[1/7] Initializing Profiler..." + ANSI_RESET);
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("jar", "xvf", "Profiler.jar", "profiler");
+            ProcessBuilder processBuilder = new ProcessBuilder("jar", "xvf", "Profiler.jar", "io/ballerina/runtime/profiler/runtime");
             Process process = processBuilder.start();
             process.waitFor();
         } catch (IOException | InterruptedException ignore) {}
@@ -130,18 +131,18 @@ public class App {
         System.out.println(ANSI_CYAN + "[4/7] Instrumenting Functions..." + ANSI_RESET);
 
         try (JarFile jarFile = new JarFile(balJarName)) {
-            String mainClassPackage = mainClassFinder(new URLClassLoader(new URL[]{new File(balJarName).toURI().toURL()}));
-            MethodWrapperClassLoader customClassLoader = new MethodWrapperClassLoader(new URLClassLoader(new URL[]{new File(balJarName).toURI().toURL()}));
+            String mainClassPackage = MethodWrapperP.mainClassFinder(new URLClassLoader(new URL[]{new File(balJarName).toURI().toURL()}));
+            ClassLoaderP customClassLoader = new ClassLoaderP(new URLClassLoader(new URL[]{new File(balJarName).toURI().toURL()}));
             Set<String> usedPaths = new HashSet<>();
 
             for (String className : classNames) {
                 if (mainClassPackage == null) continue;
                 if (className.startsWith(mainClassPackage.split("/")[0]) || utilPaths.contains(className)) {
                     try (InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry(className))) {
-                        byte[] code = modifyMethods(inputStream);
+                        byte[] code = MethodWrapperP.modifyMethods(inputStream);
                         classFiles.add(customClassLoader.loadClass(code));
                         usedPaths.add(className.replace(".class", "").replace("/", "."));
-                        printCode(className, code);
+                        MethodWrapperP.printCode(className, code);
                     }
                 }
             }
@@ -168,8 +169,8 @@ public class App {
             for (String instrumentedFilePath : instrumentedPaths) {
                 FileUtils.deleteDirectory(new File(instrumentedFilePath));
             }
-            FileUtils.deleteDirectory(new File("profiler"));
-            invokeMethods();
+            FileUtils.deleteDirectory(new File("io/ballerina/runtime/profiler/runtime"));
+            MethodWrapperP.invokeMethods();
         }
     }
 
@@ -255,3 +256,6 @@ public class App {
         }));
     }
 }
+
+//reomve stream
+//handle try catch

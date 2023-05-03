@@ -1,6 +1,6 @@
-package server;
+package io.ballerina.runtime.profiler.ui;
 
-public class ServerFrontEnd {
+public class FrontEnd {
 
     static String getSiteData(String contents) {
 

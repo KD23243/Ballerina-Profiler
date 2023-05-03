@@ -1,11 +1,11 @@
-package wrapper;
+package io.ballerina.runtime.profiler.codegen;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
 
-public class MethodWrapperAdapter extends AdviceAdapter {
+public class AdapterStrandCheckY extends AdviceAdapter {
 
     Label tryStart = new Label();
     int load;
@@ -18,9 +18,13 @@ public class MethodWrapperAdapter extends AdviceAdapter {
      @param description - description of the method that is wrapped
      @param load - the index of the local variable that holds the strand instance
      */
-    public MethodWrapperAdapter(int access, MethodVisitor mv, String methodName, String description, int load) {
+    public AdapterStrandCheckY(int access, MethodVisitor mv, String methodName, String description, int load) {
         super(Opcodes.ASM9, mv, access, methodName, description);
-        this.load = load;
+        if (load == 0){
+            this.load = 1;
+        }else {
+            this.load = 0;
+        }
     }
 
     /*  This method is called when the visitCode() method is called on the MethodVisitor
@@ -33,10 +37,10 @@ public class MethodWrapperAdapter extends AdviceAdapter {
     /*  This method is called when the wrapped method is entered
     It retrieves the profiler instance, gets the strand id and starts the profiling */
     protected void onMethodEnter() {
-        mv.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
+        mv.visitMethodInsn(INVOKESTATIC, "io/ballerina/runtime/profiler/runtime/Profiler", "getInstance", "()Lio/ballerina/runtime/profiler/runtime/Profiler;", false);
         mv.visitVarInsn(ALOAD, load);
         mv.visitMethodInsn(INVOKEVIRTUAL, "io/ballerina/runtime/internal/scheduling/Strand", "getId", "()I", false);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "start", "(I)V", false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "io/ballerina/runtime/profiler/runtime/Profiler", "start", "(I)V", false);
     }
 
     /**
@@ -68,12 +72,12 @@ public class MethodWrapperAdapter extends AdviceAdapter {
     /*  This method stops the profiling for the wrapped method
     It retrieves the profiler instance, gets the strand state and id, and stops the profiling   */
     private void onFinally() {
-        mv.visitMethodInsn(INVOKESTATIC, "profiler/Profiler", "getInstance", "()Lprofiler/Profiler;", false);
+        mv.visitMethodInsn(INVOKESTATIC, "io/ballerina/runtime/profiler/runtime/Profiler", "getInstance", "()Lio/ballerina/runtime/profiler/runtime/Profiler;", false);
         mv.visitVarInsn(ALOAD, load);
         mv.visitMethodInsn(INVOKEVIRTUAL, "io/ballerina/runtime/internal/scheduling/Strand", "getState", "()Lio/ballerina/runtime/internal/scheduling/State;", false);
         mv.visitMethodInsn(INVOKEVIRTUAL, "io/ballerina/runtime/internal/scheduling/State", "toString", "()Ljava/lang/String;", false);
         mv.visitVarInsn(ALOAD, load);
         mv.visitMethodInsn(INVOKEVIRTUAL, "io/ballerina/runtime/internal/scheduling/Strand", "getId", "()I", false);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "profiler/Profiler", "stop", "(Ljava/lang/String;I)V", false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "io/ballerina/runtime/profiler/runtime/Profiler", "stop", "(Ljava/lang/String;I)V", false);
     }
 }
