@@ -41,9 +41,17 @@ public class Profiler {
         return stack.get(2).getMethodName() + "()";
     }
 
+
     public List<String> removeDuplicates(List<String> list) {
-        return list.stream().distinct().collect(Collectors.toList());
+        List<String> newList = new ArrayList<>();
+        for (String element : list) {
+            if (!newList.contains(element)) {
+                newList.add(element);
+            }
+        }
+        return newList;
     }
+
 
     public void start(int id) {
         String name = getStackTrace();

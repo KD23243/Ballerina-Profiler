@@ -16,8 +16,19 @@ public class FrontEnd {
                 "      href=\"https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@2.0.3/dist/d3-flamegraph.css\">\n" +
                 "\n" +
                 "<style>\n" +
+
+                "#profilerLogo{\n" +
+                "         color: #20b6b0;\n" +
+                "         margin-top: -33px;\n" +
+                "         margin-left: 190px;\n" +
+                "         position: absolute;\n" +
+                "         font-size: 32px;\n" +
+                "         font-weight: bold;\n" +
+                "      }" +
+
+
                 "      body {\n" +
-                "         background-color: #1B2024;\n" +
+                "         background-color: #fefefe;\n" +
                 "      }\n" +
                 "\n" +
                 "      .container {\n" +
@@ -26,6 +37,7 @@ public class FrontEnd {
                 "      }" +
                 "\n" +
                 "      .btn {\n" +
+                "         box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);\n" +
                 "         border-radius: 10px;\n" +
                 "         border: 1px solid #20b6b0;\n" +
                 "         background-color: #20b6b0;\n" +
@@ -35,7 +47,7 @@ public class FrontEnd {
                 "      }\n" +
                 "\n" +
                 "      .btn:hover {\n" +
-                "         background-color: #494949;\n" +
+                "         background-color: black;\n" +
                 "         color: #fff;\n" +
                 "      }\n" +
                 "\n" +
@@ -52,19 +64,17 @@ public class FrontEnd {
                 "      }\n" +
                 "\n" +
                 "      .header {\n" +
-                "         margin-top: 30px;\n" +
+                "         margin-left: -40px;\n" +
+                "         box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);\n" +
                 "         padding-right: 40px;\n" +
-                "         width: 1840px;\n" +
-                "         left: 50%;\n" +
-                "         margin-bottom: 10px;\n" +
-                "         padding-bottom: 20px;\n" +
-                "         border-bottom: 0px solid #1d1d1d;\n" +
-                "         background-color: #252A2E;\n" +
-                "         border-radius: 20px;\n" +
+                "         width: 1920px;\n" +
+                "         background-color: #fbfbfd;\n" +
+                "         padding-bottom: 25px;\n" +
                 "      }\n" +
 
                 ".d3-flame-graph rect {\n" +
-                "         stroke: #252A2E;\n" +
+                "         outline: none;\n" +
+                "         stroke: #f0efef;\n" +
                 "         fill-opacity: .8;\n" +
                 "      }"+
                 "\n" +
@@ -103,6 +113,7 @@ public class FrontEnd {
                 "      }\n" +
                 "\n" +
                 "#chart {\n" +
+                "         box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);\n" +
                 "         margin-top: 40px;\n" +
                 "         margin-bottom: 40px;\n" +
                 "         max-height: 780px;\n" +
@@ -110,7 +121,7 @@ public class FrontEnd {
                 "         border-radius: 20px;\n" +
                 "         overflow-y: auto;\n" +
                 "         overflow-x: auto;\n" +
-                "         background-color: #252A2E;\n" +
+                "         background-color: #fbfbfd;\n" +
                 "      }" +
 
                 "#details{\n" +
@@ -153,7 +164,7 @@ public class FrontEnd {
                 "               </form>\n" +
                 "            </div>\n" +
                 "         </nav>\n" +
-                "         <img class=\"balLogo\" src=\"https://ballerina.io/images/ballerina-logo-white.svg\" alt=\"B7A\"/>\n" +
+                "         <img class=\"balLogo\" src=\"https://ballerina.io/images/ballerina-logo.svg\" alt=\"B7A\" /> <div id=\"profilerLogo\"> Profiler </div>\n" +
                 "      </div>\n" +
                 "      <div id=\"chart\"></div>\n" +
                 "      <div id=\"details\"></div>\n" +

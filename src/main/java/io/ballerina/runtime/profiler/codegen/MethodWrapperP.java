@@ -38,7 +38,7 @@ public class MethodWrapperP extends ClassLoader {
             Attributes attributes = manifest.getMainAttributes();
             return attributes.getValue("Main-Class").replace(".$_init", "").replace(".", "/");
         } catch (Exception | Error throwable) {
-            System.out.println(throwable);
+            System.err.println(throwable);
             return null;
         }
     }

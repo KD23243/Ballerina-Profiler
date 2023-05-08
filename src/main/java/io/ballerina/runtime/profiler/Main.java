@@ -2,6 +2,7 @@ package io.ballerina.runtime.profiler;
 
 import io.ballerina.runtime.profiler.codegen.ClassLoaderP;
 import io.ballerina.runtime.profiler.codegen.MethodWrapperP;
+import io.ballerina.runtime.profiler.util.ExceptionP;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -38,7 +39,7 @@ public class Main {
     public static ArrayList<String> utilInitPaths = new ArrayList<>(); // Paths of utility JAR files
     public static ArrayList<String> utilPaths = new ArrayList<>(); // Additional utility JAR files
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExceptionP {
         profilerStartTime = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
         tempFileCleanupShutdownHook(); // Register a shutdown hook to handle graceful shutdown of the application
         printHeader(); // Print the program header
@@ -91,13 +92,15 @@ public class Main {
         }
     }
 
-    private static void extractTheProfiler() {
+    private static void extractTheProfiler() throws ExceptionP {
         System.out.println(ANSI_CYAN + "[1/7] Initializing Profiler..." + ANSI_RESET);
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("jar", "xvf", "Profiler.jar", "io/ballerina/runtime/profiler/runtime");
             Process process = processBuilder.start();
             process.waitFor();
-        } catch (IOException | InterruptedException ignore) {}
+        } catch (IOException | InterruptedException exception) {
+            throw new ExceptionP(exception);
+        }
     }
 
     public static void createTempJar(String balJarName) {
@@ -109,12 +112,12 @@ public class Main {
             Files.copy(sourcePath.toFile().toPath(), destinationPath.toFile().toPath());
         } catch (Exception exception) {
             exitCode = 2;
-            System.out.println("Error" + exception.getMessage());
+            System.err.println("Invalid File Name");
             System.exit(0);
         }
     }
 
-    private static void initialize(String balJarName) {
+    private static void initialize(String balJarName) throws ExceptionP {
         System.out.println(ANSI_CYAN + "[3/7] Performing Analysis..." + ANSI_RESET);
 
         ArrayList<Class<?>> classFiles = new ArrayList<>();
@@ -151,11 +154,15 @@ public class Main {
                 printWriter.println(String.join(", ", usedPaths));
             }
             System.out.println(" ○ Java Classes Reached: " + classFiles.size());
-        } catch (Exception | Error ignored) {}
+        } catch (Throwable throwable) {
+            throw new ExceptionP(throwable);
+        }
 
         try {
             modifyTheJar();
-        } catch (Exception | Error ignored) {}
+        } catch (Throwable throwable) {
+            throw new ExceptionP(throwable);
+        }
     }
 
     private static void modifyTheJar() throws InterruptedException, IOException {
@@ -216,25 +223,40 @@ public class Main {
     }
 
     private static void findUtilityClasses(ArrayList<String> classNames) {
-        classNames.stream()
-                .filter(className -> className.endsWith("$_init.class"))
-                .map(className -> className.substring(0, className.lastIndexOf('/') + 1))
-                .distinct()
-                .forEach(utilInitPaths::add);
+        for (String className : classNames) {
+            if (className.endsWith("$_init.class")) {
+                String path = className.substring(0, className.lastIndexOf('/') + 1);
+                if (!utilInitPaths.contains(path)) {
+                    utilInitPaths.add(path);
+                }
+            }
+        }
 
-        classNames.stream()
-                .filter(name -> utilInitPaths.stream().anyMatch(name::startsWith))
-                .filter(name -> name.substring(utilInitPaths.stream().filter(name::startsWith).findFirst().get().length())
-                        .indexOf('/') == -1)
-                .forEach(utilPaths::add);
+        for (String name : classNames) {
+            for (String path : utilInitPaths) {
+                if (name.startsWith(path)) {
+                    String subPath = name.substring(path.length());
+                    if (subPath.indexOf('/') == -1) {
+                        utilPaths.add(name);
+                    }
+                }
+            }
+        }
     }
+
 
     private static void deleteTempData() {
         String filePrefix = "jartmp";
-        Arrays.stream(new File(System.getProperty("user.dir")).listFiles())
-                .filter(file -> file.getName().startsWith(filePrefix))
-                .forEach(FileUtils::deleteQuietly);
+        File[] files = new File(System.getProperty("user.dir")).listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.getName().startsWith(filePrefix)) {
+                    FileUtils.deleteQuietly(file);
+                }
+            }
+        }
     }
+
 
     private static void tempFileCleanupShutdownHook() {
         // Add a shutdown hook to stop the profiler and parse the output when the program is closed.
@@ -257,5 +279,4 @@ public class Main {
     }
 }
 
-//reomve stream
 //handle try catch
